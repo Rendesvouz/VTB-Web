@@ -11,6 +11,8 @@ import ScrollToTop from "../components/scrollToTop/ScrollToTop";
 import Footer from "../pages/Footer";
 import TruckListings from "../pages/AdminDashboard/TruckListings";
 import Dashboard from "../pages/AdminDashboard/Dashboard";
+import CreateTruck from "../pages/AdminDashboard/TruckListing/CreateTruck";
+import EditTruck from "../pages/AdminDashboard/TruckListing/EditTruck";
 
 function ProtectedRoutes() {
   const dispatch = useDispatch();
@@ -25,6 +27,8 @@ function ProtectedRoutes() {
       <Routes>
         <Route path="/admin-dashboard" element={<Dashboard />} />
         <Route path="/truck-listings" element={<TruckListings />} />
+        <Route path="/add-truck" element={<CreateTruck />} />
+        <Route path="/edit-truck/:id" element={<EditTruck />} />
 
         {/*  Support section */}
       </Routes>

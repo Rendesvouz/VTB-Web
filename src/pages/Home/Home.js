@@ -1,12 +1,9 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { FaXTwitter, FaFacebook } from "react-icons/fa6";
-import { FcGoogle } from "react-icons/fc";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
 
 import FormInput from "../../components/form/FormInput";
 import PasswordInput from "../../components/form/PasswordInput";
@@ -21,22 +18,18 @@ import {
   saveUserRole,
 } from "../../redux/features/user/userSlice";
 import { showToast } from "../../utils/toastify";
-import MetricTable from "../../components/adminDashboard/MetricTable";
 
 const Container = styled.div`
   display: flex;
-  height: auto;
   justify-content: center;
   align-items: center;
   background: black;
-  padding-top: 130px;
-  padding-bottom: 60px;
-  align-content: center;
+  min-height: 100vh;
+  padding: 130px 20px 60px;
 
   @media screen and (max-width: 768px) {
-    padding-top: 70px;
-    margin-bottom: 0px;
-    height: auto;
+    flex-direction: column;
+    padding: 70px 10px 40px;
   }
 `;
 
@@ -50,7 +43,9 @@ const FormContainer = styled.div`
   overflow: hidden;
 
   @media screen and (max-width: 768px) {
-    margin: 20px;
+    flex-direction: column;
+    box-shadow: none;
+    border-radius: 0;
   }
 `;
 
@@ -81,7 +76,7 @@ const Logo = styled.img`
   left: 20px;
   z-index: 1;
   width: 90%;
-  height: 20%;
+  height: auto;
 
   @media screen and (max-width: 768px) {
     display: none;
@@ -99,19 +94,19 @@ const FormSection = styled.div`
 `;
 
 const Title = styled.h2`
-  font-size: 1.5rem;
+  font-size: 2rem;
   margin-bottom: 2rem;
   color: white;
 
   @media screen and (max-width: 768px) {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    text-align: center;
   }
 `;
 
 const CheckboxGroup = styled.div`
   display: flex;
   align-items: center;
-  // margin-bottom: 1rem;
 
   input {
     margin-right: 0.5rem;
@@ -122,6 +117,9 @@ const CheckboxGroup = styled.div`
   }
 
   @media screen and (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+
     label {
       font-size: 0.8rem;
     }
@@ -148,7 +146,8 @@ const ForgetPasswordLink = styled.p`
   cursor: pointer;
 
   @media screen and (max-width: 768px) {
-    font-size: 0.8rem; /* Adjust font size for smaller screens */
+    font-size: 0.8rem;
+    text-align: center;
   }
 `;
 
@@ -244,21 +243,13 @@ function Home() {
 
       if (profileResponse?.data) {
         dispatch(getUser(profileResponse?.data));
-
+        navigate("/admin-dashboard");
         showToast("Login Successful. Welcome Back! 😇", "success");
       }
     } catch (error) {
       console.error("checkUserProfile check error:", error);
     }
   };
-
-  const users = [
-    { id: 1, name: "Alice Johnson", age: 28 },
-    { id: 2, name: "Bob Smith", age: 34 },
-    { id: 3, name: "Charlie Lee", age: 22 },
-    { id: 4, name: "Dana Kim", age: 40 },
-    { id: 5, name: "Evan Wright", age: 31 },
-  ];
 
   return (
     <Container>

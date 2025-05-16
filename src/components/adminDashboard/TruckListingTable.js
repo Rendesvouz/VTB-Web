@@ -1,12 +1,28 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+
 import FormButton from "../form/FormButton";
 import PaginationComponent from "./PaginationComp";
 import { formatDate } from "../../Library/Common";
-import { getStatusStyles } from "../../Library/Precedence";
-import TransparentBtn from "../form/TransparentBtn";
+import { getAvailabilityStyles } from "../../Library/Precedence";
+import axiosInstance from "../../utils/api-client";
+import {
+  saveEditTruckData,
+  saveTruckListings,
+} from "../../redux/features/user/userSlice";
 
-const MetricTable = ({ bookings, tableTitle }) => {
+const TruckListingTable = ({ bookings, tableTitle }) => {
   console.log("ddd", bookings);
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const state = useSelector((state) => state);
+
+  const [loading, setLoading] = useState(false);
+  const [loadingTruckId, setLoadingTruckId] = useState(null);
+  const [actionType, setActionType] = useState(null);
+
   const [sortOption, setSortOption] = useState("alphabetical");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -39,6 +55,62 @@ const MetricTable = ({ bookings, tableTitle }) => {
 
   const exportTableToCSV = () => {
     // Implementation of CSV export
+  };
+
+  const handleEdit = async (truckInfo) => {
+    console.log("truckInfo", truckInfo);
+    dispatch(saveEditTruckData(truckInfo));
+    navigate(`/edit-truck/${truckInfo?.id}`);
+  };
+
+  const handleDelete = async (truckId) => {
+    setLoadingTruckId(truckId);
+    setActionType("delete");
+    try {
+      await axiosInstance({
+        url: `api/listing/offering/${truckId}`,
+        method: "DELETE",
+      })
+        .then((res) => {
+          console.log("handleDelete res", res?.data);
+          setLoading(false);
+
+          fetchTruckListings();
+          setLoadingTruckId(null);
+          setActionType(null);
+        })
+        .catch((err) => {
+          console.log("handleDelete err", err?.response?.data);
+          setLoadingTruckId(null);
+          setActionType(null);
+        });
+    } finally {
+      setLoadingTruckId(null);
+      setActionType(null);
+    }
+  };
+
+  const fetchTruckListings = async () => {
+    setLoading(true);
+    try {
+      await axiosInstance({
+        url: "api/listings/all-offerings",
+        method: "GET",
+      })
+        .then((res) => {
+          console.log("fetchTruckListings res", res?.data);
+          setLoading(false);
+
+          dispatch(saveTruckListings(res?.data?.data));
+        })
+        .catch((err) => {
+          console.log("fetchTruckListings err", err?.response?.data);
+          setLoading(false);
+        });
+    } catch (error) {
+      console.log("fetchTruckListings error", error);
+      setLoading(false);
+    }
   };
 
   return (
@@ -80,27 +152,15 @@ const MetricTable = ({ bookings, tableTitle }) => {
           <thead className="bg-gray-50">
             <tr>
               {[
-                "Full Name",
-                "Email Address",
-                "Phone Number",
-                "Country",
-                "City",
-
                 // Truck Info
+                "Truck Images",
                 "Truck Name",
                 "Truck Model",
-
-                // Delivery Info
-                "Pickup Address",
-                "Pickup state",
-                "Pickup Country",
-                "Delivery Address",
-                "Delivery state",
-                "Delivery Country",
-
-                // appointment info
-                "Appointment Date",
-                "Appointment Time",
+                "Truck Type",
+                "Truck Capacity",
+                "Truck Location",
+                "Truck Prices",
+                "Truck Model",
 
                 "Status",
                 "Created At",
@@ -117,110 +177,62 @@ const MetricTable = ({ bookings, tableTitle }) => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {sortedPaginatedBookings?.map((user) => {
-              const statusInfo = getStatusStyles(user?.status);
+            {sortedPaginatedBookings?.map((truck, i) => {
+              const statusInfo = getAvailabilityStyles(truck?.availability);
 
               return (
-                <tr key={user?.id}>
-                  {/* <td className="px-6 py-4 whitespace-nowrap">
+                <tr key={i}>
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
                         <img
                           className="h-10 w-10 rounded-full"
-                          src={user?.profile_pictures}
+                          src={truck?.pictures}
                           alt=""
                         />
                       </div>
-                      <div className="ml-4">
+                      {/* <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">
                           {user?.username}
                         </div>
-                      </div>
-                    </div>
-                  </td> */}
-
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {user?.userProfile?.fullname}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {user?.userProfile?.User?.email}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {user?.userProfile?.User?.phoneNumber}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {user?.userProfile?.country}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {user?.userProfile?.city}
+                      </div> */}
                     </div>
                   </td>
 
                   {/* Truck Info */}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {user?.listingData?.car_name}
+                      {truck?.car_name}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{truck?.model}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{truck?.type}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {truck?.capacity}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {user?.listingData?.model}
+                      {truck?.location}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {truck?.price?.[0]}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {truck?.car_name}
                     </div>
                   </td>
 
-                  {/* Delivery Info */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {user?.pickupLocation?.address}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {user?.pickupLocation?.city}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {user?.pickupLocation?.country}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {user?.deliveryLocation?.address}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {user?.deliveryLocation?.city}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {user?.deliveryLocation?.country}
-                    </div>
-                  </td>
-
-                  {/* Appointment info */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {user?.appointmentTime?.date}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {user?.appointmentTime?.time}
-                    </div>
-                  </td>
-
+                  {/* Status */}
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusInfo.bgClass} ${statusInfo.textClass}`}
@@ -243,11 +255,36 @@ const MetricTable = ({ bookings, tableTitle }) => {
                           clipRule="evenodd"
                         />
                       </svg>
-                      {formatDate(user?.createdAt)}
+                      {formatDate(truck?.createdAt)}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  {/* <td className="px-6 py-4 whitespace-nowrap">
                     <TransparentBtn title={"View"} />
+                  </td> */}
+
+                  <td className="px-6 py-4 whitespace-nowrap flex items-center gap-2">
+                    <button
+                      onClick={() => handleEdit(truck)}
+                      className="px-3 py-1 text-sm font-medium text-blue-600 bg-blue-100 rounded hover:bg-blue-200"
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(truck?.id)}
+                      disabled={
+                        loadingTruckId === truck.id && actionType === "delete"
+                      }
+                      className={`px-3 py-1 text-sm font-medium rounded ${
+                        loadingTruckId === truck.id && actionType === "delete"
+                          ? "bg-red-300 text-white cursor-not-allowed"
+                          : "text-red-600 bg-red-100 hover:bg-red-200"
+                      }`}
+                    >
+                      {loadingTruckId === truck.id && actionType === "delete"
+                        ? "Deleting..."
+                        : "Delete"}
+                    </button>
                   </td>
                 </tr>
               );
@@ -270,4 +307,4 @@ const MetricTable = ({ bookings, tableTitle }) => {
   );
 };
 
-export default MetricTable;
+export default TruckListingTable;

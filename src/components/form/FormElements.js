@@ -5,7 +5,7 @@ export const FormBtn = styled.button`
   border-radius: 4px;
   background: ${COLORS.vtbBtnColor};
   padding: 10px 22px;
-  width: ${({ width }) => (width ? width : "122px")};
+  width: ${({ width }) => (width ? width : "100%")};
   color: #fff;
   font-size: 18;
   font-weight: 600;
@@ -20,6 +20,7 @@ export const FormBtn = styled.button`
   align-content: center;
   display: flex;
   font-family: "Montserrat", sans-serif;
+  opacity: ${({ opacity }) => (opacity ? 0.25 : null)};
 
   /* Second Nav */
   //   &:hover {
@@ -27,7 +28,6 @@ export const FormBtn = styled.button`
   //     background: #fff;
   //     color: #808080;
   //   }
-
   @media screen and (max-width: 768px) {
     width: ${({ mobileWidth }) => (mobileWidth ? mobileWidth : "100%")};
     margin-left: ${({ mobileMarginLeft }) =>
@@ -40,7 +40,7 @@ export const TransparentFormBtn = styled.button`
   background: transparent;
   padding: 10px 22px;
   width: ${({ width }) => (width ? width : "122px")};
-  color: ${({ color }) => (color ? "#fff" : "#fff")};
+  color: ${({ color }) => (color ? COLORS.vtbBtnColor : COLORS.vtbBtnColor)};
   font-size: 18;
   font-weight: 600;
   border: 2px solid ${COLORS.vtbBtnColor};
@@ -56,7 +56,8 @@ export const TransparentFormBtn = styled.button`
 
   &:hover {
     transition: all 0.2s ease-in-out;
-    color: ${({ hoverColor }) => (hoverColor ? "#fff" : "#fff")};
+    color: ${({ hoverColor }) =>
+      hoverColor ? COLORS.vtbBtnColor : COLORS.vtbBtnColor};
     border: 2px solid #ccc;
   }
 

@@ -6,13 +6,18 @@ import { useSelector, useDispatch } from "react-redux";
 import DashboardCards from "../../components/cards/DashboardCards";
 import FinancialCharts from "../../components/adminDashboard/FinancialCharts";
 import MetricTable from "../../components/adminDashboard/MetricTable";
+import axiosInstance from "../../utils/api-client";
+import {
+  saveBookedTrucks,
+  saveTruckListings,
+} from "../../redux/features/user/userSlice";
 
 const Container = styled.div`
   // display: flex;
   // height: auto;
   // justify-content: center;
   // align-items: center;
-//   background: red;
+  //   background: red;
   padding-top: 130px;
   padding-left: 40px;
   padding-right: 40px;
@@ -28,6 +33,87 @@ const Container = styled.div`
 `;
 
 function Dashboard() {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const state = useSelector((state) => state);
+
+  const userProfle = state?.user?.user;
+  console.log("userProfle", userProfle);
+
+  const reduxTruckListings = state?.user?.truckListings;
+  const reduxBookedTrucks = state?.user?.bookedTrucks;
+  console.log("reduxBookedTrucks", reduxBookedTrucks, reduxTruckListings);
+
+  const [loading, setLoading] = useState(false);
+
+  const fetchTruckListings = async () => {
+    try {
+      await axiosInstance({
+        url: "api/listings/all-offerings",
+        method: "GET",
+      })
+        .then((res) => {
+          console.log("fetchTruckListings res", res?.data);
+          dispatch(saveTruckListings(res?.data?.data));
+        })
+        .catch((err) => {
+          console.log("fetchTruckListings err", err?.response?.data);
+        });
+    } catch (error) {
+      console.log("fetchTruckListings error", error);
+    }
+  };
+
+  const getAllBookings = async () => {
+    setLoading(true);
+    try {
+      const res = await axiosInstance.get("api/books/all-booking");
+
+      const userBookings = res?.data;
+
+      if (!userBookings) return;
+
+      const enrichedBookingData = await Promise.all(
+        userBookings.map(async (booking) => {
+          try {
+            const [listingRes, userProfileRes] = await Promise.all([
+              axiosInstance.get(`api/listings/offerings/${booking?.listingId}`),
+              axiosInstance.get(`api/profile/profiles/${booking?.userId}`),
+            ]);
+
+            return {
+              ...booking,
+              listingData: listingRes?.data?.data || null,
+              userProfile: userProfileRes?.data || null,
+            };
+          } catch (error) {
+            console.error(
+              `Error enriching booking for ID ${booking?.id}`,
+              error
+            );
+            return {
+              ...booking,
+              listingData: null,
+              userProfile: null,
+            };
+          }
+        })
+      );
+
+      console.log("enrichedBookingData", enrichedBookingData);
+      dispatch(saveBookedTrucks(enrichedBookingData));
+    } catch (error) {
+      console.log("getAllBookings error", error?.response);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getAllBookings();
+    fetchTruckListings();
+  }, []);
+
   // Financial and bookings data for charts
   const financialData = [
     { name: "Jan", income: 24000, expenses: 18000, bookings: 42 },
@@ -44,23 +130,27 @@ function Dashboard() {
     { name: "Dec", income: 28000, expenses: 19000, bookings: 48 },
   ];
 
-  const users = [
-    { id: 1, name: "Alice Johnson", age: 28 },
-    { id: 2, name: "Bob Smith", age: 34 },
-    { id: 3, name: "Charlie Lee", age: 22 },
-    { id: 4, name: "Dana Kim", age: 40 },
-    { id: 5, name: "Evan Wright", age: 31 },
-  ];
-
   return (
     <Container>
-      <DashboardCards vehicles={[]} bookings={[]} />
+      <DashboardCards
+        vehicles={reduxTruckListings}
+        vehicleCount={reduxTruckListings?.length}
+        bookings={reduxBookedTrucks}
+        onTruckClick={() => {
+          navigate("/truck-listings");
+        }}
+      />
 
       {/* Chart */}
       <FinancialCharts financialData={financialData} />
 
       {/* Bookings Table */}
-      <MetricTable users={users} tableTitle={"Truck Bookings"} />
+      {reduxBookedTrucks && (
+        <MetricTable
+          bookings={reduxBookedTrucks}
+          tableTitle={"Truck Bookings"}
+        />
+      )}
     </Container>
   );
 }

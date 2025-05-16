@@ -12,6 +12,7 @@ function FormButton({
   btnIcon,
   errorMessage,
   mobileWidth,
+  opacity,
 }) {
   return (
     <div
@@ -20,11 +21,6 @@ function FormButton({
         justifyContent: "center",
         display: "flex",
         flexDirection: "column",
-        // width: "100%",
-        // backgroundColor: "red",
-        // width: "100%",
-        // alignContent: "center",
-        // alignItems: "center",
       }}
     >
       {errorMessage && (
@@ -34,8 +30,9 @@ function FormButton({
         width={width}
         marginLeft={marginLeft}
         onClick={onClick}
-        disabled={loading}
+        disabled={loading && opacity}
         mobileWidth={mobileWidth}
+        opacity={loading}
       >
         {btnIcon ? btnIcon : null}
         {loading ? "Loading ..." : title}

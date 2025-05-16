@@ -4,22 +4,18 @@ import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 
 import axiosInstance from "../../utils/api-client";
-import {
-  saveTruckListings,
-  signOut,
-} from "../../redux/features/user/userSlice";
-import DataTable from "../../components/tables/TruckTableList";
-import MetricTable from "../../components/adminDashboard/MetricTable";
+import { saveTruckListings } from "../../redux/features/user/userSlice";
+
+import FormButton from "../../components/form/FormButton";
+import TruckListingTable from "../../components/adminDashboard/TruckListingTable";
 
 const Container = styled.div`
-  // display: flex;
-  // height: auto;
-  // justify-content: center;
-  // align-items: center;
-  //   background: black;
   padding-top: 130px;
-  // padding-bottom: 60px;
-  // align-content: center;
+  padding-left: 40px;
+  padding-right: 40px;
+  padding-bottom: 60px;
+  align-content: center;
+  padding: auto;
 
   @media screen and (max-width: 768px) {
     padding-top: 70px;
@@ -38,16 +34,11 @@ function TruckListings() {
 
   const [loading, setLoading] = useState(false);
 
-  const [activeTab, setActiveTab] = useState("bookings");
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchQuery, setSearchQuery] = useState("");
-
   const fetchTruckListings = async () => {
     setLoading(true);
     try {
       await axiosInstance({
-        url: "api/listing/all-offerings",
+        url: "api/listings/all-offerings",
         method: "GET",
       })
         .then((res) => {
@@ -59,9 +50,6 @@ function TruckListings() {
         .catch((err) => {
           console.log("fetchTruckListings err", err?.response?.data);
           setLoading(false);
-
-          dispatch(signOut());
-          navigate("/");
         });
     } catch (error) {
       console.log("fetchTruckListings error", error);
@@ -73,76 +61,23 @@ function TruckListings() {
     fetchTruckListings();
   }, []);
 
-  // Sample data based on the image
-  const bookings = [
-    {
-      id: 1,
-      client: "James Smith",
-      vehicle: "Sedan/ LuxeDrive Aveline",
-      plan: "3 Day",
-      pickupDate: "12/01/2025",
-      returnDate: "15/01/2025",
-      status: "Completed",
-    },
-    {
-      id: 2,
-      client: "Liam Alexander",
-      vehicle: "Sedan/ Elysium Cruiser",
-      plan: "2 Day",
-      pickupDate: "12/01/2025",
-      returnDate: "14/01/2025",
-      status: "In Progress",
-    },
-    {
-      id: 3,
-      client: "Olivia Grace",
-      vehicle: "SUV/ TerraCruiser X5",
-      plan: "1 Day",
-      pickupDate: "12/01/2025",
-      returnDate: "13/01/2025",
-      status: "Reserved",
-    },
-    {
-      id: 4,
-      client: "Emma Charlotte",
-      vehicle: "Electric/ Voltara E1",
-      plan: "5 Day",
-      pickupDate: "07/01/2025",
-      returnDate: "12/01/2025",
-      status: "Cancelled",
-    },
-    {
-      id: 5,
-      client: "Sophia Elizabeth",
-      vehicle: "Sedan/ NexaDrive Eleg..",
-      plan: "4 Day",
-      pickupDate: "08/01/2025",
-      returnDate: "12/01/2025",
-      status: "Completed",
-    },
-    {
-      id: 6,
-      client: "Anderson Taylor",
-      vehicle: "Electric/ Voltara E1",
-      plan: "7 Day",
-      pickupDate: "04/01/2025",
-      returnDate: "11/01/2025",
-      status: "Reserved",
-    },
-  ];
-
-  const users = [
-    { id: 1, name: "Alice Johnson", age: 28 },
-    { id: 2, name: "Bob Smith", age: 34 },
-    { id: 3, name: "Charlie Lee", age: 22 },
-    { id: 4, name: "Dana Kim", age: 40 },
-    { id: 5, name: "Evan Wright", age: 31 },
-  ];
-
   return (
     <Container>
-      <h1>TruckListings</h1>
-      <MetricTable users={users} tableTitle={"Truck listings"} />
+      <div className="flex justify-between items-center 500 p-4">
+        <h1 className="text-2xl font-bold text-gray-900">TruckListings</h1>
+        <FormButton
+          title={"Create Truck"}
+          width={"100%"}
+          onClick={() => {
+            navigate("/add-truck");
+          }}
+        />
+      </div>
+
+      <TruckListingTable
+        bookings={reduxTruckListings}
+        tableTitle={"Truck listings"}
+      />
     </Container>
   );
 }

@@ -1,4 +1,4 @@
-import {createSlice} from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   loading: false,
@@ -19,10 +19,11 @@ const initialState = {
 
   truckListings: null,
   bookedTrucks: null,
+  editTruckListing: null,
 };
 
 const userSlice = createSlice({
-  name: 'user',
+  name: "user",
   initialState: initialState,
   reducers: {
     getUser: (state, action) => {
@@ -57,22 +58,8 @@ const userSlice = createSlice({
       state.accessToken = null;
       state.refreshToken = null;
       state.lastLoginTime = null;
-
-      state.cartProducts = [];
-      state.wishlistProducts = [];
-      state.shopProduct = null;
-      state.productCategories = null;
-
-      // therapist section
-      state.weeklyAvailability = {
-        Monday: [],
-        Tuesday: [],
-        Wednesday: [],
-        Thursday: [],
-        Friday: [],
-        Saturday: [],
-        Sunday: [],
-      };
+      state.truckListings = null;
+      state.bookedTrucks = null;
     },
     setUserDestination: (state, action) => {
       state.destination = action.payload;
@@ -89,36 +76,11 @@ const userSlice = createSlice({
     saveBookedTrucks: (state, action) => {
       state.bookedTrucks = action.payload;
     },
-    saveProductToCart: (state, action) => {
-      state.cartProducts = [...state.cartProducts, action.payload];
+    saveEditTruckData: (state, action) => {
+      state.editTruckListing = action.payload;
     },
-    clearCartStore: (state, action) => {
-      state.cartProducts = [];
-    },
-    removeProductFromCart: (state, action) => {
-      const updatedSavedItems = state.cartProducts.filter(
-        item => item.id !== action.payload.id,
-      );
-
-      state.cartProducts = updatedSavedItems;
-    },
-    saveProductToWishList: (state, action) => {
-      state.wishlistProducts = [...state.wishlistProducts, action.payload];
-    },
-    removeProductFromWishlist: (state, action) => {
-      const updatedSavedItems = state.wishlistProducts.filter(
-        item => item.id !== action.payload.id,
-      );
-
-      state.wishlistProducts = updatedSavedItems;
-    },
-
-    updateWeeklyAvailability: (state, action) => {
-      console.log('acccc', action.payload);
-      const {day, times} = action.payload;
-      if (state.weeklyAvailability[day]) {
-        state.weeklyAvailability[day] = times;
-      }
+    clearEditTruckListingData: (state, action) => {
+      state.editTruckListing = null;
     },
   },
 });
@@ -140,13 +102,7 @@ export const {
   // truck section
   saveTruckListings,
   saveBookedTrucks,
-
-  saveProductToCart,
-  removeProductFromCart,
-  clearCartStore,
-  saveProductToWishList,
-  removeProductFromWishlist,
-
-  updateWeeklyAvailability,
+  saveEditTruckData,
+  clearEditTruckListingData,
 } = userSlice.actions;
 export default userSlice.reducer;
