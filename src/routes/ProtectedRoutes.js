@@ -13,6 +13,7 @@ import TruckListings from "../pages/AdminDashboard/TruckListings";
 import Dashboard from "../pages/AdminDashboard/Dashboard";
 import CreateTruck from "../pages/AdminDashboard/TruckListing/CreateTruck";
 import EditTruck from "../pages/AdminDashboard/TruckListing/EditTruck";
+import TruckCategories from "../pages/AdminDashboard/TruckCategories";
 
 function ProtectedRoutes() {
   const dispatch = useDispatch();
@@ -29,6 +30,9 @@ function ProtectedRoutes() {
         <Route path="/truck-listings" element={<TruckListings />} />
         <Route path="/add-truck" element={<CreateTruck />} />
         <Route path="/edit-truck/:id" element={<EditTruck />} />
+
+        {/* Truck Categories */}
+        <Route path="/truck-categories" element={<TruckCategories />} />
 
         {/*  Support section */}
       </Routes>

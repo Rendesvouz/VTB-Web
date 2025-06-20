@@ -1,11 +1,12 @@
 import React, { useRef, useState } from "react";
-import { Camera, Truck, X, Upload, Save } from "lucide-react";
+import { Truck, Save } from "lucide-react";
 import MediaUpload from "../../../components/upload/MediaUpload";
 import styled from "styled-components";
 import axiosInstance from "../../../utils/api-client";
 import FormButton from "../../../components/form/FormButton";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { useDispatch, useSelector } from "react-redux";
 
 const Container = styled.div`
   padding-top: 130px;
@@ -24,6 +25,12 @@ const Container = styled.div`
 
 function CreateTruck() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const state = useSelector((state) => state);
+
+  const reduxTruckCategories = state?.user?.truckCategories;
+  console.log("reduxTruckCategories", reduxTruckCategories);
+
   const [loading, setLoading] = useState(false);
 
   const [truckInfo, setTruckInfo] = useState({
@@ -46,6 +53,22 @@ function CreateTruck() {
       ...truckInfo,
       [name]: value,
     });
+  };
+
+  const handleTruckTypeSelect = (e) => {
+    const selectedType = e.target.value;
+    const selectedCategory = reduxTruckCategories?.find(
+      (cat) => cat.type === selectedType
+    );
+
+    if (selectedCategory) {
+      setTruckInfo((prev) => ({
+        ...prev,
+        carType: selectedCategory?.type,
+        carPrice: selectedCategory?.baseFare,
+        carCapacity: selectedCategory?.capacity,
+      }));
+    }
   };
 
   const handleImageUpload = (e) => {
@@ -76,16 +99,6 @@ function CreateTruck() {
     setPreviewUrls(newPreviewUrls);
   };
 
-  const handleSubmit = (e) => {
-    if (e) e.preventDefault();
-    // Here you would typically send the form data to your backend
-    console.log("Truck Info:", truckInfo);
-    console.log("Images:", images);
-
-    // For demonstration, show an alert
-    alert("Truck information submitted successfully!");
-  };
-
   const addTruckToListings = async () => {
     setLoading(true);
     const formData = new FormData();
@@ -98,7 +111,12 @@ function CreateTruck() {
     formData?.append("description", truckInfo?.carDescription);
     formData?.append("availability", "available");
     formData?.append("price[]", truckInfo?.carPrice);
-    formData?.append("pictures", images);
+
+    images?.forEach((img, index) => {
+      console.log("ddd", img);
+      const fileName = `listing-image-${Date.now()}-${index}.png`;
+      formData.append("pictures", img);
+    });
 
     console.log("formData:", formData, images);
 
@@ -110,7 +128,7 @@ function CreateTruck() {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-        // withCredentials: true,
+        withCredentials: true,
       })
         .then((res) => {
           console.log("addTruckToListings res", res?.data);
@@ -178,16 +196,19 @@ function CreateTruck() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Vehicle Type
                   </label>
-                  <input
-                    type="text"
+                  <select
                     name="carType"
                     value={truckInfo.carType}
-                    onChange={handleInputChange}
+                    onChange={handleTruckTypeSelect}
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="e.g. 2022"
-                    min="1900"
-                    max="2030"
-                  />
+                  >
+                    <option value="">Select Truck Type</option>
+                    {reduxTruckCategories?.map((category) => (
+                      <option key={category?.type} value={category?.type}>
+                        {category?.type}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
@@ -202,6 +223,7 @@ function CreateTruck() {
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="e.g. 120 tons"
                     min="0"
+                    disabled
                   />
                 </div>
               </div>
@@ -223,7 +245,7 @@ function CreateTruck() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Vehicle Price Rate
+                    Vehicle Base Fare
                   </label>
                   <input
                     type="number"
@@ -234,6 +256,7 @@ function CreateTruck() {
                     placeholder="e.g. 35000"
                     min="0"
                     step="0.01"
+                    disabled
                   />
                 </div>
               </div>

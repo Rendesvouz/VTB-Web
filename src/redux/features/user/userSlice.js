@@ -20,6 +20,7 @@ const initialState = {
   truckListings: null,
   bookedTrucks: null,
   editTruckListing: null,
+  truckCategories: null,
 };
 
 const userSlice = createSlice({
@@ -73,6 +74,9 @@ const userSlice = createSlice({
     saveTruckListings: (state, action) => {
       state.truckListings = action.payload;
     },
+    saveTruckCategories: (state, action) => {
+      state.truckCategories = action.payload;
+    },
     saveBookedTrucks: (state, action) => {
       state.bookedTrucks = action.payload;
     },
@@ -104,5 +108,6 @@ export const {
   saveBookedTrucks,
   saveEditTruckData,
   clearEditTruckListingData,
+  saveTruckCategories,
 } = userSlice.actions;
 export default userSlice.reducer;

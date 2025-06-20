@@ -14,7 +14,7 @@ export const FormBtn = styled.button`
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   text-decoration: none;
-  margin-left: ${({ marginLeft }) => (marginLeft ? marginLeft : "24px")};
+  margin-left: ${({ marginLeft }) => (marginLeft ? marginLeft : "0px")};
   align-items: center;
   justify-content: center;
   align-content: center;
@@ -39,7 +39,7 @@ export const TransparentFormBtn = styled.button`
   border-radius: 4px;
   background: transparent;
   padding: 10px 22px;
-  width: ${({ width }) => (width ? width : "122px")};
+  width: ${({ width }) => (width ? width : "100%")};
   color: ${({ color }) => (color ? COLORS.vtbBtnColor : COLORS.vtbBtnColor)};
   font-size: 18;
   font-weight: 600;
@@ -47,7 +47,7 @@ export const TransparentFormBtn = styled.button`
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   text-decoration: none;
-  margin-left: ${({ marginLeft }) => (marginLeft ? marginLeft : "24px")};
+  margin-left: ${({ marginLeft }) => (marginLeft ? marginLeft : "0px")};
   align-items: center;
   justify-content: center;
   align-content: center;

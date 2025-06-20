@@ -13,7 +13,7 @@ import { MdOutlineAccountCircle } from "react-icons/md";
 import { FaHandshakeAngle } from "react-icons/fa6";
 import { FaLink, FaBell } from "react-icons/fa";
 import { IoIosRemoveCircle } from "react-icons/io";
-import { MdFileUpload } from "react-icons/md";
+import { BiCategory } from "react-icons/bi";
 import { BsTruck } from "react-icons/bs";
 
 export const SidebarData = [
@@ -41,6 +41,11 @@ export const SidebarData = [
     title: "Truck Listings",
     path: "/truck-listings",
     icon: <BsTruck />,
+  },
+  {
+    title: "Truck Category",
+    path: "/truck-categories",
+    icon: <BiCategory />,
   },
   {
     title: "Settings",

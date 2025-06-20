@@ -1,6 +1,6 @@
-import React, { useRef, useState } from "react";
-import { Camera, Truck, X, Upload, Save } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useState } from "react";
+import { Truck, Save } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import styled from "styled-components";
 import { useDispatch, useSelector } from "react-redux";
@@ -26,11 +26,12 @@ const Container = styled.div`
 `;
 
 function EditTruck() {
-  const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const state = useSelector((state) => state);
-  console.log("useParamsId", id);
+
+  const reduxTruckCategories = state?.user?.truckCategories;
+  console.log("reduxTruckCategories", reduxTruckCategories);
 
   const reduxEditTruckData = state?.user?.editTruckListing;
   console.log("reduxEditTruckData", reduxEditTruckData);
@@ -96,16 +97,6 @@ function EditTruck() {
     setPreviewUrls(newPreviewUrls);
   };
 
-  const handleSubmit = (e) => {
-    if (e) e.preventDefault();
-    // Here you would typically send the form data to your backend
-    console.log("Truck Info:", truckInfo);
-    console.log("Images:", images);
-
-    // For demonstration, show an alert
-    alert("Truck information submitted successfully!");
-  };
-
   const editTruckToListings = async () => {
     setLoading(true);
     const formData = new FormData();
@@ -118,11 +109,11 @@ function EditTruck() {
     formData?.append("description", truckInfo?.carDescription);
     formData?.append("availability", "available");
     formData?.append("price[]", [truckInfo?.carPrice]);
-    formData?.append("pictures", images);
+    // formData?.append("pictures", images);
 
-    // images?.map((image, i) => {
-    //   formData?.append(`pictures[${i}]`, image);
-    // });
+    images?.map((image) => {
+      formData?.append(`pictures`, image);
+    });
 
     console.log("formData:", formData, images);
 
@@ -203,16 +194,33 @@ function EditTruck() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Vehicle Type
                   </label>
-                  <input
-                    type="text"
+                  <select
                     name="carType"
-                    value={truckInfo.carType}
-                    onChange={handleInputChange}
+                    value={truckInfo?.carType}
+                    onChange={(e) => {
+                      const selectedType = e.target.value;
+                      const selectedCategory = reduxTruckCategories?.find(
+                        (cat) => cat?.type === selectedType
+                      );
+
+                      if (selectedCategory) {
+                        setTruckInfo((prev) => ({
+                          ...prev,
+                          carType: selectedCategory?.type,
+                          carPrice: selectedCategory?.baseFare,
+                          carCapacity: selectedCategory?.capacity,
+                        }));
+                      }
+                    }}
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="e.g. 2022"
-                    min="1900"
-                    max="2030"
-                  />
+                  >
+                    <option value="">Select Truck Type</option>
+                    {reduxTruckCategories?.map((category) => (
+                      <option key={category?.type} value={category?.type}>
+                        {category?.type}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div>
@@ -227,6 +235,7 @@ function EditTruck() {
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="e.g. 120 tons"
                     min="0"
+                    disabled
                   />
                 </div>
               </div>
@@ -259,6 +268,7 @@ function EditTruck() {
                     placeholder="e.g. 35000"
                     min="0"
                     step="0.01"
+                    disabled
                   />
                 </div>
               </div>

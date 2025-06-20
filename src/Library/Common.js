@@ -547,3 +547,13 @@ export function extractCallingCode(formattedNumber, rawNumber) {
 
   return callingCode; // e.g., "213"
 }
+
+export const formatToNaira = (number) => {
+  const numeric = typeof number === "string" ? parseFloat(number) : number;
+
+  return new Intl.NumberFormat("en-NG", {
+    style: "currency",
+    currency: "NGN",
+    minimumFractionDigits: 0,
+  }).format(numeric);
+};

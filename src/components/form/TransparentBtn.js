@@ -15,7 +15,14 @@ function TransparentBtn({
   loadingTitle,
 }) {
   return (
-    <div style={{ marginTop: marginTop }}>
+    <div
+      style={{
+        marginTop: marginTop,
+        justifyContent: "center",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       <TransparentFormBtn
         width={width}
         marginLeft={marginLeft}

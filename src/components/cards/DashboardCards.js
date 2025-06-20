@@ -4,7 +4,7 @@ import { Truck, Map, DollarSign, Calendar, User } from "lucide-react";
 function DashboardCards({ vehicles, vehicleCount, bookings, onTruckClick }) {
   return (
     // Dashboard Stats
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 cursor-pointer">
       <div className="bg-white p-4 rounded shadow" onClick={onTruckClick}>
         <div className="flex items-center space-x-2">
           <Truck className="text-blue-500" />

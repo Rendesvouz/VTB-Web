@@ -15,12 +15,12 @@ const Overlay = styled.div`
 `;
 
 const ModalContainer = styled.div`
-  background: black;
+  background: white;
   padding: 20px;
   border-radius: 8px;
   width: 90%;
-  max-width: 500px;
-  max-height: 90vh;
+  max-width: 800px;
+  max-height: 100vh;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 1001;
   position: relative;
@@ -40,7 +40,8 @@ const ModalHeader = styled.div`
 const ModalTitle = styled.h2`
   margin: 0;
   font-size: 1.2rem;
-  color: white;
+  color: black;
+  font-weight: 500;
 `;
 
 const CloseButton = styled.button`
@@ -48,7 +49,7 @@ const CloseButton = styled.button`
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: white;
+  color: black;
 `;
 
 const ModalContent = styled.div`

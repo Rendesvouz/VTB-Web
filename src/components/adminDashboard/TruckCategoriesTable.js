@@ -1,19 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 import FormButton from "../form/FormButton";
 import PaginationComponent from "./PaginationComp";
 import { formatDate, formatToNaira } from "../../Library/Common";
-import { getAvailabilityStyles } from "../../Library/Precedence";
 import axiosInstance from "../../utils/api-client";
-import {
-  saveEditTruckData,
-  saveTruckListings,
-} from "../../redux/features/user/userSlice";
+import { saveTruckCategories } from "../../redux/features/user/userSlice";
+import Modal from "../modal/Modal";
+import FormInput from "../form/FormInput";
 
-const TruckListingTable = ({ bookings, tableTitle, assignDriver }) => {
-  console.log("ddd", bookings);
+const TruckCategoriesTable = ({ categories, tableTitle }) => {
+  console.log("categories", categories);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -23,6 +22,20 @@ const TruckListingTable = ({ bookings, tableTitle, assignDriver }) => {
   const [loadingTruckId, setLoadingTruckId] = useState(null);
   const [actionType, setActionType] = useState(null);
 
+  const [openModal, setOpenModal] = useState(false);
+
+  const [selectedCategory, setSelectedCategory] = useState();
+  console.log("selelee", selectedCategory);
+
+  const [truckType, setTruckType] = useState("");
+  const [truckBaseFare, setTruckBaseFare] = useState("");
+  const [truckCapacity, setTruckCapacity] = useState("");
+  const [truckDimension, setTruckDimension] = useState("");
+
+  const closeModal = () => {
+    setOpenModal(!openModal);
+  };
+
   const [sortOption, setSortOption] = useState("alphabetical");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -31,7 +44,7 @@ const TruckListingTable = ({ bookings, tableTitle, assignDriver }) => {
     setSortOption(e.target.value);
   };
 
-  const sortedBookings = [...bookings]?.sort((a, b) => {
+  const sortedCategories = [...categories]?.sort((a, b) => {
     if (sortOption === "alphabetical") {
       return a?.username?.localeCompare(b?.username);
     } else if (sortOption === "recent") {
@@ -42,44 +55,37 @@ const TruckListingTable = ({ bookings, tableTitle, assignDriver }) => {
 
   const indexOfLastUser = currentPage * itemsPerPage;
   const indexOfFirstUser = indexOfLastUser - itemsPerPage;
-  const sortedPaginatedBookings = sortedBookings?.slice(
+  const sortedPaginatedCategories = sortedCategories?.slice(
     indexOfFirstUser,
     indexOfLastUser
   );
 
-  const totalPages = Math.ceil(bookings?.length / itemsPerPage);
+  const totalPages = Math.ceil(categories?.length / itemsPerPage);
 
   const prevPage = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
   const nextPage = () =>
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
 
-  const exportTableToCSV = () => {
-    // Implementation of CSV export
+  const handleEdit = async (categoryInfo) => {
+    console.log("categoryInfo", categoryInfo);
+    setSelectedCategory(categoryInfo);
+    //   open modal here
+    setOpenModal(!openModal);
   };
-
-  const handleEdit = async (truckInfo) => {
-    console.log("truckInfo", truckInfo);
-    dispatch(saveEditTruckData(truckInfo));
-    navigate(`/edit-truck/${truckInfo?.id}`);
-  };
-
-  // const assignDriver = async (truckInfo) => {
-  //   console.log("assignDriver", truckInfo);
-  // };
 
   const handleDelete = async (truckId) => {
     setLoadingTruckId(truckId);
     setActionType("delete");
     try {
       await axiosInstance({
-        url: `api/listing/offering/${truckId}`,
+        url: `api/listing/category/${truckId}`,
         method: "DELETE",
       })
         .then((res) => {
           console.log("handleDelete res", res?.data);
           setLoading(false);
 
-          fetchTruckListings();
+          fetchTruckCategories();
           setLoadingTruckId(null);
           setActionType(null);
         })
@@ -94,28 +100,80 @@ const TruckListingTable = ({ bookings, tableTitle, assignDriver }) => {
     }
   };
 
-  const fetchTruckListings = async () => {
+  const editCategory = async (categoryId) => {
+    setLoading(true);
+
+    const categorydata = {
+      type: truckType,
+      baseFare: truckBaseFare,
+      capacity: truckCapacity,
+      dimension: truckDimension,
+    };
+    console.log("categorydata", categorydata);
+
+    try {
+      await axiosInstance({
+        url: `api/listing/category/${categoryId}`,
+        method: "PUT",
+        data: categorydata,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((res) => {
+          console.log("editCategory res", res?.data);
+          setLoading(false);
+          toast.success("Truck category updated successfully");
+          closeModal();
+          fetchTruckCategories();
+        })
+        .catch((err) => {
+          console.log("editCategory err", err?.response?.data);
+          setLoading(false);
+          toast.error(
+            "An error occured while updating category, please try again later"
+          );
+        });
+    } catch (error) {
+      console.log("createCateeditCategorygory error", error);
+      setLoading(false);
+      toast.error(
+        "An error occured while updating category, please try again later"
+      );
+    }
+  };
+
+  const fetchTruckCategories = async () => {
     setLoading(true);
     try {
       await axiosInstance({
-        url: "api/listings/all-offerings",
+        url: "api/listing/category",
         method: "GET",
       })
         .then((res) => {
-          console.log("fetchTruckListings res", res?.data);
+          console.log("fetchTruckCategories res", res?.data);
           setLoading(false);
 
-          dispatch(saveTruckListings(res?.data?.data));
+          dispatch(saveTruckCategories(res?.data?.data));
         })
         .catch((err) => {
-          console.log("fetchTruckListings err", err?.response?.data);
+          console.log("fetchTruckCategories err", err?.response?.data);
           setLoading(false);
         });
     } catch (error) {
-      console.log("fetchTruckListings error", error);
+      console.log("fetchTruckCategories error", error);
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (selectedCategory) {
+      setTruckType(selectedCategory.type || "");
+      setTruckBaseFare(selectedCategory.baseFare || "");
+      setTruckCapacity(selectedCategory.capacity || "");
+      setTruckDimension(selectedCategory.dimension || "");
+    }
+  }, [selectedCategory]);
 
   return (
     <div className="bg-white shadow-lg rounded-lg overflow-hidden">
@@ -126,7 +184,7 @@ const TruckListingTable = ({ bookings, tableTitle, assignDriver }) => {
               {tableTitle} Management
             </h2>
             <p className="mt-1 text-sm text-gray-500">
-              Manage and monitor user accounts and their statuses.
+              {/* Manage and monitor user accounts and their statuses. */}
             </p>
           </div>
           <div className="flex items-center">
@@ -146,7 +204,6 @@ const TruckListingTable = ({ bookings, tableTitle, assignDriver }) => {
               <option value="alphabetical">Alphabetical</option>
               <option value="recent">Recent</option>
             </select>
-            <FormButton title="Download CSV" onClick={exportTableToCSV} />
           </div>
         </div>
       </div>
@@ -156,20 +213,13 @@ const TruckListingTable = ({ bookings, tableTitle, assignDriver }) => {
           <thead className="bg-gray-50">
             <tr>
               {[
-                // Truck Info
-                "Truck Images",
-                "Truck Name",
-                "Truck Model",
-                "Truck Type",
-                "Truck Capacity",
-                "Truck Location",
-                "Truck Prices",
-                "Truck Model",
-                "Assigned Driver",
+                "S/N",
+                "Category Name",
+                "Category Capacity",
+                "Category Price",
+                "Category Dimension",
 
-                "Status",
                 "Created At",
-                "Updated At",
                 "Action",
               ]?.map((header) => (
                 <th
@@ -183,31 +233,11 @@ const TruckListingTable = ({ bookings, tableTitle, assignDriver }) => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {sortedPaginatedBookings?.map((truck, i) => {
-              const statusInfo = getAvailabilityStyles(truck?.availability);
-
+            {sortedPaginatedCategories?.map((truck, i) => {
               return (
                 <tr key={i}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <img
-                          className="h-10 w-10 rounded-full"
-                          src={truck?.pictures}
-                          alt=""
-                        />
-                      </div>
-                    </div>
-                  </td>
-
-                  {/* Truck Info */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {truck?.car_name}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{truck?.model}</div>
+                    <div className="text-sm text-gray-900">{i + 1}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">{truck?.type}</div>
@@ -219,33 +249,15 @@ const TruckListingTable = ({ bookings, tableTitle, assignDriver }) => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {truck?.location}
+                      {formatToNaira(truck?.baseFare)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {formatToNaira(truck?.price?.[0])}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {truck?.car_name}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {truck?.driverId}
+                      {truck?.dimension}
                     </div>
                   </td>
 
-                  {/* Status */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusInfo.bgClass} ${statusInfo.textClass}`}
-                    >
-                      {statusInfo.label}
-                    </span>
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="flex items-center">
                       <svg
@@ -262,24 +274,6 @@ const TruckListingTable = ({ bookings, tableTitle, assignDriver }) => {
                         />
                       </svg>
                       {formatDate(truck?.createdAt)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="flex items-center">
-                      <svg
-                        className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      {formatDate(truck?.updatedAt)}
                     </div>
                   </td>
 
@@ -306,15 +300,6 @@ const TruckListingTable = ({ bookings, tableTitle, assignDriver }) => {
                         ? "Deleting..."
                         : "Delete"}
                     </button>
-
-                    {!truck?.driverId && (
-                      <button
-                        onClick={() => assignDriver(truck)}
-                        className="px-3 py-1 text-sm font-medium text-green-600 bg-green-100 rounded hover:bg-green-200"
-                      >
-                        Employ/Assign Driver
-                      </button>
-                    )}
                   </td>
                 </tr>
               );
@@ -327,14 +312,75 @@ const TruckListingTable = ({ bookings, tableTitle, assignDriver }) => {
         <PaginationComponent
           currentPage={currentPage}
           totalPages={totalPages}
-          totalItems={bookings?.length}
+          totalItems={categories?.length}
           itemsPerPage={itemsPerPage}
           onPrev={prevPage}
           onNext={nextPage}
         />
       </div>
+
+      <Modal
+        title="Edit Truck Category"
+        isOpen={openModal}
+        onClose={closeModal}
+      >
+        <FormInput
+          formTitle={"Category Name"}
+          inputBackgroundColor="white"
+          formTitleColor="black"
+          inputColor="black"
+          type={"text"}
+          value={truckType}
+          onChange={(e) => setTruckType(e.target.value)}
+        />
+        <FormInput
+          formTitle={"Category BaseFare"}
+          inputBackgroundColor="white"
+          formTitleColor="black"
+          inputColor="black"
+          inputPlaceholder={"N2000"}
+          type={"number"}
+          value={truckBaseFare}
+          onChange={(e) => {
+            setTruckBaseFare(e.target.value);
+          }}
+        />
+        <FormInput
+          formTitle={"Category Capacity"}
+          inputBackgroundColor="white"
+          formTitleColor="black"
+          inputColor="black"
+          type={"number"}
+          value={truckCapacity}
+          onChange={(e) => {
+            setTruckCapacity(e.target.value);
+          }}
+          inputPlaceholder={"20tons"}
+        />
+        <FormInput
+          formTitle={"Category Dimension"}
+          inputBackgroundColor="white"
+          formTitleColor="black"
+          inputColor="black"
+          type={"text"}
+          value={truckDimension}
+          onChange={(e) => {
+            setTruckDimension(e.target.value);
+          }}
+        />
+
+        <FormButton
+          title={"Edit Category"}
+          width={"100%"}
+          marginLeft={"0px"}
+          onClick={() => {
+            editCategory(selectedCategory?.id);
+          }}
+          loading={loading}
+        />
+      </Modal>
     </div>
   );
 };
 
-export default TruckListingTable;
+export default TruckCategoriesTable;
