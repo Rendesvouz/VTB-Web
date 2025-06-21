@@ -38,6 +38,7 @@ function TruckListings() {
   const [loading, setLoading] = useState(false);
   const [showDrivers, setShowDrivers] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const closeModal = () => {
     setOpenModal(!openModal);
@@ -147,20 +148,22 @@ function TruckListings() {
     }
   };
 
-  const handleEmployDriverToTruck = async () => {
+  const employDriverToTruckOwner = async () => {
+    console.log("employDriverToTruckOwner");
     setLoading(true);
 
     const assignData = {
       driverId: selectedDriver?.id,
-      truckId: selectedTruckForAssignment?.id,
-      status: "assign",
+      status: "active",
       startDate: Date.now(),
       endDate: null,
+      notes: "",
     };
+    console.log("employDriverToTruckOwner", assignData);
 
     try {
       await axiosInstance({
-        url: "api/truckowner/assign-truck",
+        url: "api/truckowner/employ",
         method: "POST",
         data: assignData,
         headers: {
@@ -168,29 +171,38 @@ function TruckListings() {
         },
       })
         .then((res) => {
-          console.log("handleAssignDriverToTruck res", res?.data);
+          console.log("employDriverToTruckOwner res", res?.data);
           setLoading(false);
-          setShowDrivers(false);
+          // setShowDrivers(false);
+          setOpenModal(false);
+          setTermsAccepted(false);
 
           toast.success(
-            `Successfully assigned ${selectedDriver?.fullName} to ${selectedTruckForAssignment?.car_name}`
+            `Successfully employed ${selectedDriver?.fullName} to your organization`
           );
 
           fetchTruckListings();
+          fetchTruckOwnerDrivers();
         })
         .catch((err) => {
-          console.log("handleAssignDriverToTruck err", err?.response?.data);
+          console.log("employDriverToTruckOwner err", err?.response?.data);
           setLoading(false);
-          toast.error("An error occured while assigning driver to truck");
+          toast.error(
+            `An error occured while employing ${selectedDriver?.fullName} to your organization`
+          );
         });
     } catch (error) {
-      console.log("handleAssignDriverToTruck error", error?.response);
+      console.log("employDriverToTruckOwner error", error?.response);
       setLoading(false);
-      toast.error("An error occured while assigning driver to truck");
+      toast.error(
+        `An error occured while employing ${selectedDriver?.fullName} to your organization`
+      );
     }
   };
 
-  const handleAssignDriverToTruck = async () => {
+  const assignDriverToTruckOwnersTruck = async () => {
+    console.log("assignDriverToTruckOwnersTruck");
+
     setLoading(true);
 
     const assignData = {
@@ -213,13 +225,15 @@ function TruckListings() {
         .then((res) => {
           console.log("handleAssignDriverToTruck res", res?.data);
           setLoading(false);
-          setShowDrivers(false);
+          setOpenModal(false);
+          setTermsAccepted(false);
 
           toast.success(
             `Successfully assigned ${selectedDriver?.fullName} to ${selectedTruckForAssignment?.car_name}`
           );
 
           fetchTruckListings();
+          fetchTruckOwnerDrivers();
         })
         .catch((err) => {
           console.log("handleAssignDriverToTruck err", err?.response?.data);
@@ -272,25 +286,83 @@ function TruckListings() {
                 setSelectedDriver(driver);
                 setOpenModal(true);
               }}
+              onCloseDisplay={() => {
+                setShowDrivers(false);
+              }}
             />
           )}
 
-          {selectedDriver && (
+          {openModal && (
             <Modal
-              title={"Truck Assignment"}
+              title={
+                selectedDriver?.truckownerId
+                  ? "Truck Assignment"
+                  : "Driver Employment"
+              }
               isOpen={openModal}
               onClose={closeModal}
             >
               <div className="mt-4">
-                <p className="text-lg font-semibold text-center mb-3">
-                  Assign {selectedDriver?.fullName} to{" "}
-                  {selectedTruckForAssignment?.car_name} ?
-                </p>
+                {selectedDriver?.truckownerId ? (
+                  <p className="text-lg text-center mb-3">
+                    Are you sure you want to assign{" "}
+                    <span className="font-semibold">
+                      {selectedDriver?.fullName}
+                    </span>{" "}
+                    to{" "}
+                    <span className="font-semibold">
+                      {selectedTruckForAssignment?.car_name}
+                    </span>
+                    ?
+                  </p>
+                ) : (
+                  <p className="text-lg text-center mb-3">
+                    Are you sure you want to employ{" "}
+                    <span className="font-semibold">
+                      {selectedDriver?.fullName}
+                    </span>{" "}
+                    to your organization as one of your drivers? Please read and
+                    accept the{" "}
+                    <span className="font-semibold">Terms & Conditions</span>{" "}
+                    before proceeding with this.
+                  </p>
+                )}
+
+                {/* Terms & Conditions Section */}
+                <div className="text-sm text-gray-600 flex items-start space-x-2">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    className="mt-1"
+                    checked={termsAccepted}
+                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                  />
+                  <label htmlFor="terms">
+                    I have read and accept the{" "}
+                    <a
+                      href="/terms-and-conditions"
+                      target="_blank"
+                      className="text-blue-600 underline"
+                    >
+                      Terms & Conditions
+                    </a>{" "}
+                    regarding this employment or assignment.
+                  </label>
+                </div>
 
                 <FormButton
-                  title={`Confirm Assignment`}
-                  onClick={() => handleEmployDriverToTruck(selectedDriver)}
+                  title={
+                    selectedDriver?.truckownerId
+                      ? "Confirm Assignment"
+                      : "Confirm Employment"
+                  }
+                  onClick={() => {
+                    selectedDriver?.truckownerId
+                      ? assignDriverToTruckOwnersTruck(selectedDriver)
+                      : employDriverToTruckOwner(selectedDriver);
+                  }}
                   loading={loading}
+                  disabled={!termsAccepted}
                 />
               </div>
             </Modal>

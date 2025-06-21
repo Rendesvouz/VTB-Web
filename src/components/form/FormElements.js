@@ -7,27 +7,21 @@ export const FormBtn = styled.button`
   padding: 10px 22px;
   width: ${({ width }) => (width ? width : "100%")};
   color: #fff;
-  font-size: 18;
+  font-size: 18px;
   font-weight: 600;
   outline: none;
   border: none;
-  cursor: pointer;
+  cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
   transition: all 0.2s ease-in-out;
   text-decoration: none;
   margin-left: ${({ marginLeft }) => (marginLeft ? marginLeft : "0px")};
   align-items: center;
   justify-content: center;
-  align-content: center;
   display: flex;
   font-family: "Montserrat", sans-serif;
-  opacity: ${({ opacity }) => (opacity ? 0.25 : null)};
+  opacity: ${({ disabled, $opacity }) =>
+    disabled ? 0.5 : $opacity ? 0.25 : 1};
 
-  /* Second Nav */
-  //   &:hover {
-  //     transition: all 0.2s ease-in-out;
-  //     background: #fff;
-  //     color: #808080;
-  //   }
   @media screen and (max-width: 768px) {
     width: ${({ mobileWidth }) => (mobileWidth ? mobileWidth : "100%")};
     margin-left: ${({ mobileMarginLeft }) =>

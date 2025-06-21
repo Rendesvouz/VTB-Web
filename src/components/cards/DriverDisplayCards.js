@@ -6,6 +6,7 @@ const DriverSelectionDisplay = ({
   driversArray,
   truckOwnerDriversArray,
   onDriverSelected,
+  onCloseDisplay,
 }) => {
   console.log("driversArray", driversArray, truckOwnerDriversArray);
 
@@ -13,7 +14,7 @@ const DriverSelectionDisplay = ({
 
   const handleAssignDriver = async (driver) => {
     console.log("Assigning driver:", driver);
-    setSelectedDriver(selectedDriver);
+    setSelectedDriver(driver);
 
     if (onDriverSelected) {
       onDriverSelected(driver);
@@ -162,7 +163,12 @@ const DriverSelectionDisplay = ({
             <button className="px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors font-medium">
               Refresh List
             </button>
-            <TransparentBtn title={"Close"} />
+            <TransparentBtn
+              title={"Close"}
+              onClick={() => {
+                onCloseDisplay();
+              }}
+            />
           </div>
         </div>
       </div>

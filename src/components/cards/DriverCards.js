@@ -111,7 +111,7 @@ function DriverCards({ props, onClick }) {
           <FormButton
             title={props?.truckownerId ? "Assign Driver" : "Employ Driver"}
             marginLeft={"0px"}
-            onClick={onClick}
+            onClick={() => onClick(props)}
           />
         </div>
       </div>

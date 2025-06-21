@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -15,6 +15,7 @@ import {
   saveAccessToken,
   saveLoginTime,
   saveRefreshToken,
+  saveTruckCategories,
   saveUserRole,
 } from "../../redux/features/user/userSlice";
 import { showToast } from "../../utils/toastify";
@@ -250,6 +251,33 @@ function Home() {
       console.error("checkUserProfile check error:", error);
     }
   };
+
+  const fetchTruckCategories = async () => {
+    setLoading(true);
+    try {
+      await axiosInstance({
+        url: "api/listing/category",
+        method: "GET",
+      })
+        .then((res) => {
+          console.log("fetchTruckCategories res", res?.data);
+          setLoading(false);
+
+          dispatch(saveTruckCategories(res?.data?.data));
+        })
+        .catch((err) => {
+          console.log("fetchTruckCategories err", err?.response?.data);
+          setLoading(false);
+        });
+    } catch (error) {
+      console.log("fetchTruckCategories error", error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTruckCategories();
+  }, []);
 
   return (
     <Container>

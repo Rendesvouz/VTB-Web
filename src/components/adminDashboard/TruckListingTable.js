@@ -63,10 +63,6 @@ const TruckListingTable = ({ bookings, tableTitle, assignDriver }) => {
     navigate(`/edit-truck/${truckInfo?.id}`);
   };
 
-  // const assignDriver = async (truckInfo) => {
-  //   console.log("assignDriver", truckInfo);
-  // };
-
   const handleDelete = async (truckId) => {
     setLoadingTruckId(truckId);
     setActionType("delete");
@@ -243,7 +239,7 @@ const TruckListingTable = ({ bookings, tableTitle, assignDriver }) => {
                     <span
                       className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusInfo.bgClass} ${statusInfo.textClass}`}
                     >
-                      {statusInfo.label}
+                      {statusInfo?.label}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

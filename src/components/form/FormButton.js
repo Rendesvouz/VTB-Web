@@ -13,6 +13,7 @@ function FormButton({
   errorMessage,
   mobileWidth,
   opacity,
+  disabled,
 }) {
   return (
     <div
@@ -30,9 +31,9 @@ function FormButton({
         width={width}
         marginLeft={marginLeft}
         onClick={onClick}
-        disabled={loading && opacity}
+        disabled={loading || disabled}
+        $opacity={loading}
         mobileWidth={mobileWidth}
-        opacity={loading}
       >
         {btnIcon ? btnIcon : null}
         {loading ? "Loading ..." : title}
