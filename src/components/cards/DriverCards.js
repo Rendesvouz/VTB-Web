@@ -3,28 +3,70 @@ import { Star, Clock, MapPin, Award } from "lucide-react";
 import FormButton from "../form/FormButton";
 import TransparentBtn from "../form/TransparentBtn";
 
-function DriverCards({ props, onClick }) {
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "unemployed":
-        return "bg-green-100 text-green-800";
-      case "On Route":
-        return "bg-yellow-100 text-yellow-800";
-      case "Off Duty":
-        return "bg-gray-100 text-gray-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+function DriverCards({ props, onClick, disabled, assignedDriverIds = [] }) {
+  // console.log("popop", props, assignedDriverIds);
+
+  const getStatusColor = (props) => {
+    if (!props) return "bg-gray-100 text-gray-500";
+
+    if (props?.status === "employed" && props?.assignedTruck) {
+      return "bg-blue-100 text-blue-800";
+    } else if (props?.status === "employed" && !props?.assignedTruck) {
+      return "bg-indigo-100 text-indigo-800";
+    } else if (props?.status === "unemployed" && !props?.truckownerId) {
+      return "bg-green-100 text-green-800";
+    } else if (props?.status === "unemployed" && props?.truckownerId) {
+      return "bg-yellow-100 text-yellow-800";
+    } else {
+      return "bg-red-100 text-red-800";
     }
   };
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case "unemployed":
-        return "Available";
-      case "On Route":
-        return "On Route";
-      default:
-        return "UnAvailable";
+  const getStatusText = (props) => {
+    if (!props) return "Unknown";
+
+    if (props?.status === "employed" && props?.assignedTruck) {
+      return "Assigned";
+    } else if (props?.status === "employed" && !props?.assignedTruck) {
+      return "Employed (Unassigned)";
+    } else if (props?.status === "unemployed" && !props?.truckownerId) {
+      return "Available for Hire";
+    } else if (props?.status === "unemployed" && props?.truckownerId) {
+      return "Pending Employment";
+    } else {
+      return "Unknown Status";
+    }
+  };
+
+  const getDriverActionText = (props) => {
+    if (!props) return "Unknown";
+
+    if (props?.assignedTruck && props?.truckownerId) {
+      return "Assigned";
+    } else if (props?.status === "employed" && props?.truckownerId) {
+      return "Assign Driver";
+    } else if (props?.status === "unemployed" && !props?.truckownerId) {
+      return "Employ Driver";
+    } else if (props?.status === "unemployed" && props?.truckownerId) {
+      return "Pending Employment";
+    }
+
+    return "Unknown";
+  };
+
+  const disableButton = (props) => {
+    if (!props) return false;
+
+    if (props?.status === "employed" && props?.assignedTruck) {
+      return true;
+    } else if (props?.status === "employed" && !props?.assignedTruck) {
+      return false;
+    } else if (props?.status === "unemployed" && !props?.truckownerId) {
+      return false;
+    } else if (props?.status === "unemployed" && props?.truckownerId) {
+      return false;
+    } else {
+      return false;
     }
   };
 
@@ -34,10 +76,10 @@ function DriverCards({ props, onClick }) {
       <div className="absolute top-4 right-4 z-10">
         <span
           className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-            props?.status
+            props
           )}`}
         >
-          {getStatusText(props?.status)}
+          {getStatusText(props)}
         </span>
       </div>
 
@@ -109,9 +151,10 @@ function DriverCards({ props, onClick }) {
           <TransparentBtn title={"View Profile"} marginLeft={"0px"} />
 
           <FormButton
-            title={props?.truckownerId ? "Assign Driver" : "Employ Driver"}
+            title={getDriverActionText(props)}
             marginLeft={"0px"}
             onClick={() => onClick(props)}
+            disabled={disableButton(props)}
           />
         </div>
       </div>

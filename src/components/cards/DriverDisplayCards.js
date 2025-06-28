@@ -1,14 +1,26 @@
 import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
 import TransparentBtn from "../form/TransparentBtn";
 import DriverCards from "./DriverCards";
 
 const DriverSelectionDisplay = ({
   driversArray,
   truckOwnerDriversArray,
+  assignedDriverIds,
   onDriverSelected,
   onCloseDisplay,
 }) => {
-  console.log("driversArray", driversArray, truckOwnerDriversArray);
+  console.log(
+    "driversArray",
+    driversArray,
+    truckOwnerDriversArray,
+    assignedDriverIds
+  );
+  const state = useSelector((state) => state);
+
+  const loggedInUser = state?.user?.user;
+  console.log("loggedInUser", loggedInUser);
 
   const [selectedDriver, setSelectedDriver] = useState(null);
 
@@ -48,6 +60,11 @@ const DriverSelectionDisplay = ({
                 key={i}
                 props={driver}
                 onClick={handleAssignDriver}
+                disabled={
+                  assignedDriverIds?.includes(driver?.driverId) ||
+                  (driver?.status == "employed" &&
+                    driver?.truckownerId != loggedInUser?.userId)
+                }
               />
             ))
           ) : (
@@ -112,6 +129,12 @@ const DriverSelectionDisplay = ({
                 key={i}
                 props={driver}
                 onClick={handleAssignDriver}
+                disabled={
+                  assignedDriverIds?.includes(driver?.driverId) ||
+                  (driver?.status === "employed" &&
+                    driver?.truckownerId !== loggedInUser?.userId)
+                }
+                assignedDriverIds={assignedDriverIds}
               />
             ))
           ) : (

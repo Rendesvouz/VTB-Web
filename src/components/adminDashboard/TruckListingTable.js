@@ -12,7 +12,7 @@ import {
   saveTruckListings,
 } from "../../redux/features/user/userSlice";
 
-const TruckListingTable = ({ bookings, tableTitle, assignDriver }) => {
+const TruckListingTable = ({ bookings = [], tableTitle, assignDriver }) => {
   console.log("ddd", bookings);
 
   const navigate = useNavigate();
@@ -161,6 +161,8 @@ const TruckListingTable = ({ bookings, tableTitle, assignDriver }) => {
                 "Truck Location",
                 "Truck Prices",
                 "Truck Model",
+
+                // driver info
                 "Assigned Driver",
 
                 "Status",
@@ -230,7 +232,7 @@ const TruckListingTable = ({ bookings, tableTitle, assignDriver }) => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {truck?.driverId}
+                      {truck?.matchedDriverProfile?.fullName}
                     </div>
                   </td>
 

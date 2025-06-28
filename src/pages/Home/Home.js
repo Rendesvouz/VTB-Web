@@ -252,33 +252,6 @@ function Home() {
     }
   };
 
-  const fetchTruckCategories = async () => {
-    setLoading(true);
-    try {
-      await axiosInstance({
-        url: "api/listing/category",
-        method: "GET",
-      })
-        .then((res) => {
-          console.log("fetchTruckCategories res", res?.data);
-          setLoading(false);
-
-          dispatch(saveTruckCategories(res?.data?.data));
-        })
-        .catch((err) => {
-          console.log("fetchTruckCategories err", err?.response?.data);
-          setLoading(false);
-        });
-    } catch (error) {
-      console.log("fetchTruckCategories error", error);
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTruckCategories();
-  }, []);
-
   return (
     <Container>
       <FormContainer>
@@ -347,6 +320,7 @@ function Home() {
             loading={loading}
             errorMessage={formError}
             marginTop={20}
+            disabled={loading}
           />
 
           <p

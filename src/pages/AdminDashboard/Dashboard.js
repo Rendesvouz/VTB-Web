@@ -9,7 +9,9 @@ import MetricTable from "../../components/adminDashboard/MetricTable";
 import axiosInstance from "../../utils/api-client";
 import {
   saveBookedTrucks,
+  saveTruckCategories,
   saveTruckListings,
+  saveTruckOnwerTrucksListings,
 } from "../../redux/features/user/userSlice";
 
 const Container = styled.div`
@@ -64,6 +66,60 @@ function Dashboard() {
     }
   };
 
+  const fetchTruckOwnerTrucksListings = async () => {
+    setLoading(true);
+
+    try {
+      const truckListingResponse = await axiosInstance({
+        url: "api/listing/all-truckowner-listing",
+        method: "GET",
+      });
+
+      console.log("truckListingResponse", truckListingResponse?.data);
+
+      if (truckListingResponse?.data) {
+        const matchedResponses = truckListingResponse?.data;
+
+        const matchedResponseWithProfiles = await Promise.all(
+          matchedResponses?.map(async (listing) => {
+            const matchedDriverProfile = await getDriversProfile(
+              listing?.driverId
+            );
+            return { ...listing, matchedDriverProfile };
+          })
+        );
+
+        console.log(
+          "fetchTruckOwnerTrucksListings",
+          matchedResponseWithProfiles
+        );
+        dispatch(saveTruckOnwerTrucksListings(matchedResponseWithProfiles));
+        setLoading(false);
+      }
+    } catch (error) {
+      console.log("fetchTruckOwnerTrucksListings error", error?.response);
+      setLoading(false);
+    }
+  };
+
+  const getDriversProfile = async (driverId) => {
+    try {
+      const response = await axiosInstance({
+        url: `api/profile/driverprofiles/${driverId}`,
+        method: "GET",
+      });
+      console.log("getDriversProfile res", response?.data);
+      return response?.data?.data?.profile;
+    } catch (error) {
+      console.error(
+        `getDriversProfile error for driverId ${driverId}:`,
+        error?.response
+      );
+
+      return null;
+    }
+  };
+
   const getAllBookings = async () => {
     setLoading(true);
     try {
@@ -108,10 +164,34 @@ function Dashboard() {
       setLoading(false);
     }
   };
+  const fetchTruckCategories = async () => {
+    setLoading(true);
+    try {
+      await axiosInstance({
+        url: "api/listing/category",
+        method: "GET",
+      })
+        .then((res) => {
+          console.log("fetchTruckCategories res", res?.data);
+          setLoading(false);
+
+          dispatch(saveTruckCategories(res?.data?.data));
+        })
+        .catch((err) => {
+          console.log("fetchTruckCategories err", err?.response?.data);
+          setLoading(false);
+        });
+    } catch (error) {
+      console.log("fetchTruckCategories error", error);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     getAllBookings();
     fetchTruckListings();
+    fetchTruckCategories();
+    fetchTruckOwnerTrucksListings();
   }, []);
 
   // Financial and bookings data for charts

@@ -17,10 +17,13 @@ const initialState = {
   cartProducts: [],
   wishlistProducts: [],
 
-  truckListings: null,
+  truckListings: [],
   bookedTrucks: null,
   editTruckListing: null,
   truckCategories: null,
+
+  // truckowners
+  truckOwnersTrucksListings: [],
 };
 
 const userSlice = createSlice({
@@ -61,6 +64,7 @@ const userSlice = createSlice({
       state.lastLoginTime = null;
       state.truckListings = null;
       state.bookedTrucks = null;
+      state.truckOwnersTrucksListings = [];
     },
     setUserDestination: (state, action) => {
       state.destination = action.payload;
@@ -73,6 +77,9 @@ const userSlice = createSlice({
     },
     saveTruckListings: (state, action) => {
       state.truckListings = action.payload;
+    },
+    saveTruckOnwerTrucksListings: (state, action) => {
+      state.truckOwnersTrucksListings = action.payload;
     },
     saveTruckCategories: (state, action) => {
       state.truckCategories = action.payload;
@@ -109,5 +116,8 @@ export const {
   saveEditTruckData,
   clearEditTruckListingData,
   saveTruckCategories,
+
+  // truckowner
+  saveTruckOnwerTrucksListings,
 } = userSlice.actions;
 export default userSlice.reducer;

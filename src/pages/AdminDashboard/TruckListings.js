@@ -4,7 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 
 import axiosInstance from "../../utils/api-client";
-import { saveTruckListings } from "../../redux/features/user/userSlice";
+import {
+  saveTruckListings,
+  saveTruckOnwerTrucksListings,
+} from "../../redux/features/user/userSlice";
 
 import FormButton from "../../components/form/FormButton";
 import TruckListingTable from "../../components/adminDashboard/TruckListingTable";
@@ -33,7 +36,8 @@ function TruckListings() {
   const state = useSelector((state) => state);
 
   const reduxTruckListings = state?.user?.truckListings;
-  console.log("reduxTruckListings", reduxTruckListings);
+  const reduxTruckOwnersTrucksListings = state?.user?.truckOwnersTrucksListings;
+  console.log("reduxTruckOwnersTrucksListings", reduxTruckOwnersTrucksListings);
 
   const [loading, setLoading] = useState(false);
   const [showDrivers, setShowDrivers] = useState(false);
@@ -51,12 +55,14 @@ function TruckListings() {
   const [truckOwnerDrivers, setTruckOwnerDrivers] = useState([]);
   const [driversListing, setDriverslisting] = useState([]);
 
+  const [assignedDriverIds, setAssignedDriverIds] = useState([]);
+
   const fetchTruckListings = async () => {
     setLoading(true);
 
     try {
       const truckListingResponse = await axiosInstance({
-        url: "api/listings/all-offerings",
+        url: "api/listing/all-offerings",
         method: "GET",
       });
 
@@ -84,6 +90,42 @@ function TruckListings() {
     }
   };
 
+  const fetchTruckOwnerTrucksListings = async () => {
+    setLoading(true);
+
+    try {
+      const truckListingResponse = await axiosInstance({
+        url: "api/listing/all-truckowner-listing",
+        method: "GET",
+      });
+
+      console.log("truckListingResponse", truckListingResponse?.data);
+
+      if (truckListingResponse?.data) {
+        const matchedResponses = truckListingResponse?.data;
+
+        const matchedResponseWithProfiles = await Promise.all(
+          matchedResponses?.map(async (listing) => {
+            const matchedDriverProfile = await getDriversProfile(
+              listing?.driverId
+            );
+            return { ...listing, matchedDriverProfile };
+          })
+        );
+
+        console.log(
+          "fetchTruckOwnerTrucksListings",
+          matchedResponseWithProfiles
+        );
+        dispatch(saveTruckOnwerTrucksListings(matchedResponseWithProfiles));
+        setLoading(false);
+      }
+    } catch (error) {
+      console.log("fetchTruckOwnerTrucksListings error", error?.response);
+      setLoading(false);
+    }
+  };
+
   const getDriversProfile = async (driverId) => {
     try {
       const response = await axiosInstance({
@@ -91,7 +133,7 @@ function TruckListings() {
         method: "GET",
       });
       console.log("getDriversProfile res", response?.data);
-      return response?.data?.data?.profile;
+      return response?.data;
     } catch (error) {
       console.error(
         `getDriversProfile error for driverId ${driverId}:`,
@@ -125,6 +167,85 @@ function TruckListings() {
     }
   };
 
+  const fetchDriversListingsWithTruckInfo = async () => {
+    setLoading(true);
+    try {
+      const [driversRes, trucksRes] = await Promise.all([
+        axiosInstance.get("api/profile/all-driverprofile"),
+        axiosInstance.get("api/listings/all-offerings"),
+      ]);
+
+      const drivers = driversRes?.data?.data || [];
+      const trucks = trucksRes?.data?.data || [];
+      console.log("fetchDriversListingsWithTruckInfo", drivers, trucks);
+
+      // Build a map of driverId -> truck info
+      const driverToTruckMap = {};
+      trucks?.forEach((truck) => {
+        if (truck?.driverId) {
+          driverToTruckMap[truck.driverId] = truck;
+        }
+      });
+
+      // Append assigned truck info to each driver
+      const enrichedDrivers = drivers?.map((driver) => ({
+        ...driver,
+        assignedTruck: driverToTruckMap[driver.driverId] || null,
+      }));
+
+      setDriverslisting(enrichedDrivers);
+      setLoading(false);
+
+      console.log("Enriched Drivers with Truck Info", enrichedDrivers);
+    } catch (error) {
+      console.log("Error fetching drivers or truck listings:", error);
+      setLoading(false);
+    }
+  };
+
+  const fetchTruckOwnersDriversListingsWithTruckInfo = async () => {
+    setLoading(true);
+    try {
+      const [driversRes, trucksRes] = await Promise.all([
+        axiosInstance.get("api/truckowner/get-drivers"),
+        axiosInstance.get("api/listings/all-offerings"),
+      ]);
+
+      const drivers = driversRes?.data?.data || [];
+      const trucks = trucksRes?.data?.data || [];
+      console.log(
+        "fetchTruckOwnersDriversListingsWithTruckInfo",
+        drivers,
+        trucks
+      );
+
+      // Build a map of driverId -> truck info
+      const driverToTruckMap = {};
+      trucks?.forEach((truck) => {
+        if (truck?.driverId) {
+          driverToTruckMap[truck?.driverId] = truck;
+        }
+      });
+
+      // Append assigned truck info to each driver
+      const enrichedDrivers = drivers?.map((driver) => ({
+        ...driver,
+        assignedTruck: driverToTruckMap[driver?.driverId] || null,
+      }));
+
+      setTruckOwnerDrivers(enrichedDrivers);
+      setLoading(false);
+
+      console.log(
+        "Enriched TruckOwner Drivers with Truck Info",
+        enrichedDrivers
+      );
+    } catch (error) {
+      console.log("Error fetching drivers or truck listings:", error);
+      setLoading(false);
+    }
+  };
+
   const fetchTruckOwnerDrivers = async () => {
     setLoading(true);
     try {
@@ -148,12 +269,34 @@ function TruckListings() {
     }
   };
 
+  const checkAndUpdateTruckOwnerDriversWithTruckListings = async () => {
+    try {
+      const res = await axiosInstance.get("api/listings/all-offerings");
+
+      const assignedDrivers = res?.data?.data
+        ?.filter((truck) => truck?.driverId)
+        ?.map((truck) => truck?.driverId);
+
+      console.log(
+        "checkAndUpdateTruckOwnerDriversWithTruckListings",
+        assignedDrivers,
+        res?.data?.data
+      );
+
+      // Return unique driver IDs
+      return Array.from(new Set(assignedDrivers));
+    } catch (error) {
+      console.error("Assigned driver fetch failed:", error?.response);
+      return [];
+    }
+  };
+
   const employDriverToTruckOwner = async () => {
-    console.log("employDriverToTruckOwner");
+    console.log("employDriverToTruckOwner", selectedDriver);
     setLoading(true);
 
     const assignData = {
-      driverId: selectedDriver?.id,
+      driverId: selectedDriver?.driverId,
       status: "active",
       startDate: Date.now(),
       endDate: null,
@@ -181,8 +324,9 @@ function TruckListings() {
             `Successfully employed ${selectedDriver?.fullName} to your organization`
           );
 
-          fetchTruckListings();
-          fetchTruckOwnerDrivers();
+          fetchTruckOwnerTrucksListings();
+          fetchTruckOwnersDriversListingsWithTruckInfo();
+          fetchDriversListingsWithTruckInfo();
         })
         .catch((err) => {
           console.log("employDriverToTruckOwner err", err?.response?.data);
@@ -206,7 +350,7 @@ function TruckListings() {
     setLoading(true);
 
     const assignData = {
-      driverId: selectedDriver?.id,
+      driverId: selectedDriver?.driverId,
       truckId: selectedTruckForAssignment?.id,
       status: "assign",
       startDate: Date.now(),
@@ -232,8 +376,9 @@ function TruckListings() {
             `Successfully assigned ${selectedDriver?.fullName} to ${selectedTruckForAssignment?.car_name}`
           );
 
-          fetchTruckListings();
-          fetchTruckOwnerDrivers();
+          fetchTruckOwnerTrucksListings();
+          fetchTruckOwnersDriversListingsWithTruckInfo();
+          fetchDriversListingsWithTruckInfo();
         })
         .catch((err) => {
           console.log("handleAssignDriverToTruck err", err?.response?.data);
@@ -248,12 +393,16 @@ function TruckListings() {
   };
 
   useEffect(() => {
-    fetchTruckListings();
+    fetchTruckOwnerTrucksListings();
   }, []);
 
   useEffect(() => {
-    fetchDriversListings();
-    fetchTruckOwnerDrivers();
+    // fetchDriversListings();
+    fetchTruckOwnersDriversListingsWithTruckInfo();
+    fetchDriversListingsWithTruckInfo();
+    checkAndUpdateTruckOwnerDriversWithTruckListings().then((assigned) =>
+      setAssignedDriverIds(assigned)
+    );
   }, [showDrivers]);
 
   return (
@@ -281,6 +430,7 @@ function TruckListings() {
             <DriverSelectionDisplay
               driversArray={driversListing}
               truckOwnerDriversArray={truckOwnerDrivers}
+              assignedDriverIds={assignedDriverIds}
               onDriverSelected={(driver) => {
                 console.log("Selected Driver in Parent:", driver);
                 setSelectedDriver(driver);
@@ -371,7 +521,7 @@ function TruckListings() {
       )}
 
       <TruckListingTable
-        bookings={reduxTruckListings}
+        bookings={reduxTruckOwnersTrucksListings}
         tableTitle={"Truck listings"}
         assignDriver={(truck) => {
           setSelectedTruckForAssignment(truck);
