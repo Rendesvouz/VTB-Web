@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 
 import axiosInstance from "../../utils/api-client";
 import {
+  saveTruckDetailsData,
   saveTruckListings,
   saveTruckOnwerTrucksListings,
 } from "../../redux/features/user/userSlice";
@@ -35,9 +36,12 @@ function TruckListings() {
   const dispatch = useDispatch();
   const state = useSelector((state) => state);
 
+  const userProfle = state?.user?.user;
+  const isTruckOwner = userProfle?.User?.role == "TruckOwner";
+
   const reduxTruckListings = state?.user?.truckListings;
   const reduxTruckOwnersTrucksListings = state?.user?.truckOwnersTrucksListings;
-  console.log("reduxTruckOwnersTrucksListings", reduxTruckOwnersTrucksListings);
+  // console.log("reduxTruckOwnersTrucksListings", reduxTruckOwnersTrucksListings);
 
   const [loading, setLoading] = useState(false);
   const [showDrivers, setShowDrivers] = useState(false);
@@ -62,7 +66,7 @@ function TruckListings() {
 
     try {
       const truckListingResponse = await axiosInstance({
-        url: "api/listing/all-offerings",
+        url: "api/listings/all-offerings",
         method: "GET",
       });
 
@@ -76,7 +80,15 @@ function TruckListings() {
             const matchedDriverProfile = await getDriversProfile(
               listing?.driverId
             );
-            return { ...listing, matchedDriverProfile };
+            const truckOwnerProfile = await getTruckOwnerProfile(
+              listing?.truckOwnerId
+            );
+
+            return {
+              ...listing,
+              matchedDriverProfile,
+              truckOwnerProfile,
+            };
           })
         );
 
@@ -144,26 +156,22 @@ function TruckListings() {
     }
   };
 
-  const fetchDriversListings = async () => {
-    setLoading(true);
+  const getTruckOwnerProfile = async (truckOwnerId) => {
+    console.log("truckOwnerId", truckOwnerId);
     try {
-      await axiosInstance({
-        url: "api/profile/all-driverprofile",
+      const response = await axiosInstance({
+        url: `api/profile/truckprofiles/${truckOwnerId}`,
         method: "GET",
-      })
-        .then((res) => {
-          console.log("fetchDriversListings res", res?.data);
-          setLoading(false);
-
-          setDriverslisting(res?.data?.data);
-        })
-        .catch((err) => {
-          console.log("fetchDriversListings err", err?.response?.data);
-          setLoading(false);
-        });
+      });
+      console.log("getTruckOwnerProfile res", response?.data);
+      return response?.data;
     } catch (error) {
-      console.log("fetchDriversListings error", error);
-      setLoading(false);
+      console.error(
+        `getTruckOwnerProfile error for truckOwnerId ${truckOwnerId}:`,
+        error?.response
+      );
+
+      return null;
     }
   };
 
@@ -203,48 +211,49 @@ function TruckListings() {
     }
   };
 
-  const fetchTruckOwnersDriversListingsWithTruckInfo = async () => {
-    setLoading(true);
-    try {
-      const [driversRes, trucksRes] = await Promise.all([
-        axiosInstance.get("api/truckowner/get-drivers"),
-        axiosInstance.get("api/listings/all-offerings"),
-      ]);
+  const fetchAssignedTruckDriversTogetherWithTheirAssignedTruckInfo =
+    async () => {
+      setLoading(true);
+      try {
+        const [driversRes, trucksRes] = await Promise.all([
+          axiosInstance.get("api/truckowner/get-drivers"),
+          axiosInstance.get("api/listings/all-offerings"),
+        ]);
 
-      const drivers = driversRes?.data?.data || [];
-      const trucks = trucksRes?.data?.data || [];
-      console.log(
-        "fetchTruckOwnersDriversListingsWithTruckInfo",
-        drivers,
-        trucks
-      );
+        const drivers = driversRes?.data?.data || [];
+        const trucks = trucksRes?.data?.data || [];
+        console.log(
+          "fetchAssignedTruckDriversTogetherWithTheirAssignedTruckInfo",
+          drivers,
+          trucks
+        );
 
-      // Build a map of driverId -> truck info
-      const driverToTruckMap = {};
-      trucks?.forEach((truck) => {
-        if (truck?.driverId) {
-          driverToTruckMap[truck?.driverId] = truck;
-        }
-      });
+        // Build a map of driverId -> truck info
+        const driverToTruckMap = {};
+        trucks?.forEach((truck) => {
+          if (truck?.driverId) {
+            driverToTruckMap[truck?.driverId] = truck;
+          }
+        });
 
-      // Append assigned truck info to each driver
-      const enrichedDrivers = drivers?.map((driver) => ({
-        ...driver,
-        assignedTruck: driverToTruckMap[driver?.driverId] || null,
-      }));
+        // Append assigned truck info to each driver
+        const enrichedDrivers = drivers?.map((driver) => ({
+          ...driver,
+          assignedTruck: driverToTruckMap[driver?.driverId] || null,
+        }));
 
-      setTruckOwnerDrivers(enrichedDrivers);
-      setLoading(false);
+        setTruckOwnerDrivers(enrichedDrivers);
+        setLoading(false);
 
-      console.log(
-        "Enriched TruckOwner Drivers with Truck Info",
-        enrichedDrivers
-      );
-    } catch (error) {
-      console.log("Error fetching drivers or truck listings:", error);
-      setLoading(false);
-    }
-  };
+        console.log(
+          "Enriched TruckOwner Drivers with Truck Info",
+          enrichedDrivers
+        );
+      } catch (error) {
+        console.log("Error fetching drivers or truck listings:", error);
+        setLoading(false);
+      }
+    };
 
   const fetchTruckOwnerDrivers = async () => {
     setLoading(true);
@@ -325,7 +334,7 @@ function TruckListings() {
           );
 
           fetchTruckOwnerTrucksListings();
-          fetchTruckOwnersDriversListingsWithTruckInfo();
+          fetchAssignedTruckDriversTogetherWithTheirAssignedTruckInfo();
           fetchDriversListingsWithTruckInfo();
         })
         .catch((err) => {
@@ -377,7 +386,7 @@ function TruckListings() {
           );
 
           fetchTruckOwnerTrucksListings();
-          fetchTruckOwnersDriversListingsWithTruckInfo();
+          fetchAssignedTruckDriversTogetherWithTheirAssignedTruckInfo();
           fetchDriversListingsWithTruckInfo();
         })
         .catch((err) => {
@@ -393,29 +402,34 @@ function TruckListings() {
   };
 
   useEffect(() => {
-    fetchTruckOwnerTrucksListings();
-  }, []);
+    if (isTruckOwner) {
+      fetchTruckOwnerTrucksListings();
 
-  useEffect(() => {
-    // fetchDriversListings();
-    fetchTruckOwnersDriversListingsWithTruckInfo();
-    fetchDriversListingsWithTruckInfo();
-    checkAndUpdateTruckOwnerDriversWithTruckListings().then((assigned) =>
-      setAssignedDriverIds(assigned)
-    );
+      fetchAssignedTruckDriversTogetherWithTheirAssignedTruckInfo();
+      fetchDriversListingsWithTruckInfo();
+      checkAndUpdateTruckOwnerDriversWithTruckListings().then((assigned) =>
+        setAssignedDriverIds(assigned)
+      );
+    } else {
+      fetchTruckListings();
+    }
   }, [showDrivers]);
 
   return (
     <Container>
       <div className="flex justify-between items-center 500 p-4">
         <h1 className="text-2xl font-bold text-gray-900">TruckListings</h1>
-        <FormButton
-          title={"Create Truck"}
-          width={"100%"}
-          onClick={() => {
-            navigate("/add-truck");
-          }}
-        />
+        {isTruckOwner && (
+          <FormButton
+            title={"Create Truck"}
+            width={"100%"}
+            onClick={() => {
+              isTruckOwner
+                ? navigate("/truck-owner/add-truck")
+                : navigate("/add-truck");
+            }}
+          />
+        )}
       </div>
 
       {showDrivers && selectedTruckForAssignment && (
@@ -521,11 +535,18 @@ function TruckListings() {
       )}
 
       <TruckListingTable
-        bookings={reduxTruckOwnersTrucksListings}
+        bookings={
+          isTruckOwner ? reduxTruckOwnersTrucksListings : reduxTruckListings
+        }
         tableTitle={"Truck listings"}
         assignDriver={(truck) => {
           setSelectedTruckForAssignment(truck);
           setShowDrivers(true);
+        }}
+        onViewTruck={(truck) => {
+          console.log("onViewTruck", truck);
+          dispatch(saveTruckDetailsData(truck));
+          navigate(`/truck-details/${truck?.id}`);
         }}
       />
     </Container>

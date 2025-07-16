@@ -1,14 +1,12 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Truck, Save } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import styled from "styled-components";
-import { useDispatch, useSelector } from "react-redux";
-
 import MediaUpload from "../../../components/upload/MediaUpload";
+import styled from "styled-components";
 import axiosInstance from "../../../utils/api-client";
 import FormButton from "../../../components/form/FormButton";
-import { clearEditTruckListingData } from "../../../redux/features/user/userSlice";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useDispatch, useSelector } from "react-redux";
 
 const Container = styled.div`
   padding-top: 130px;
@@ -25,7 +23,7 @@ const Container = styled.div`
   }
 `;
 
-function EditTruck() {
+function CreateTruck() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const state = useSelector((state) => state);
@@ -33,33 +31,21 @@ function EditTruck() {
   const reduxTruckCategories = state?.user?.truckCategories;
   console.log("reduxTruckCategories", reduxTruckCategories);
 
-  const reduxEditTruckData = state?.user?.editTruckListing;
-  console.log("reduxEditTruckData", reduxEditTruckData);
-
   const [loading, setLoading] = useState(false);
 
   const [truckInfo, setTruckInfo] = useState({
-    carName: reduxEditTruckData?.car_name ? reduxEditTruckData?.car_name : "",
-    carModel: reduxEditTruckData?.model ? reduxEditTruckData?.model : "",
-    carType: reduxEditTruckData?.type ? reduxEditTruckData?.type : "",
-    carCapacity: reduxEditTruckData?.capacity
-      ? reduxEditTruckData?.capacity
-      : "",
-    carLocation: reduxEditTruckData?.location
-      ? reduxEditTruckData?.location
-      : "",
-    carDescription: reduxEditTruckData?.description
-      ? reduxEditTruckData?.description
-      : "",
-    carPrice: reduxEditTruckData?.price ? reduxEditTruckData?.price?.[0] : "",
+    carName: "",
+    carModel: "",
+    carType: "",
+    carCapacity: "",
+    carLocation: "",
+    carDescription: "",
+    carPrice: "",
   });
 
-  const [images, setImages] = useState(
-    reduxEditTruckData?.pictures ? reduxEditTruckData?.pictures : []
-  );
-  const [previewUrls, setPreviewUrls] = useState(
-    reduxEditTruckData?.pictures ? reduxEditTruckData?.pictures : []
-  );
+  const [images, setImages] = useState([]);
+  const [previewUrls, setPreviewUrls] = useState([]);
+  const fileInputRef = useRef(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -67,6 +53,22 @@ function EditTruck() {
       ...truckInfo,
       [name]: value,
     });
+  };
+
+  const handleTruckTypeSelect = (e) => {
+    const selectedType = e.target.value;
+    const selectedCategory = reduxTruckCategories?.find(
+      (cat) => cat.type === selectedType
+    );
+
+    if (selectedCategory) {
+      setTruckInfo((prev) => ({
+        ...prev,
+        carType: selectedCategory?.type,
+        carPrice: selectedCategory?.baseFare,
+        carCapacity: selectedCategory?.capacity,
+      }));
+    }
   };
 
   const handleImageUpload = (e) => {
@@ -97,7 +99,7 @@ function EditTruck() {
     setPreviewUrls(newPreviewUrls);
   };
 
-  const editTruckToListings = async () => {
+  const addTruckToListings = async () => {
     setLoading(true);
     const formData = new FormData();
 
@@ -108,15 +110,11 @@ function EditTruck() {
     formData?.append("location", truckInfo?.carLocation);
     formData?.append("description", truckInfo?.carDescription);
     formData?.append("availability", "available");
-    formData?.append("price[]", [truckInfo?.carPrice]);
-    // formData?.append("pictures", images);
-
-    // images?.map((image) => {
-    //   formData?.append(`pictures`, image);
-    // });
+    formData?.append("price[]", truckInfo?.carPrice);
 
     images?.forEach((img, index) => {
       console.log("ddd", img);
+      const fileName = `listing-image-${Date.now()}-${index}.png`;
       formData.append("pictures", img);
     });
 
@@ -124,8 +122,8 @@ function EditTruck() {
 
     try {
       await axiosInstance({
-        url: `api/listing/offerings/${reduxEditTruckData?.id}`,
-        method: "PUT",
+        url: "api/listing/offerings",
+        method: "POST",
         data: formData,
         headers: {
           "Content-Type": "multipart/form-data",
@@ -133,20 +131,19 @@ function EditTruck() {
         withCredentials: true,
       })
         .then((res) => {
-          console.log("editTruckToListings res", res?.data);
+          console.log("addTruckToListings res", res?.data);
           setLoading(false);
-          dispatch(clearEditTruckListingData());
-          navigate("/truck-owner/truck-listings");
+          navigate("/truck-listings");
         })
         .catch((err) => {
-          console.log("editTruckToListings err", err?.response);
+          console.log("addTruckToListings err", err?.response);
           setLoading(false);
           toast.error(
             "An error occured while creating your truck, please try again later"
           );
         });
     } catch (error) {
-      console.log("editTruckToListings error", error?.response);
+      console.log("addTruckToListings error", error?.response);
       setLoading(false);
       toast.error(
         "An error occured while creating your truck, please try again later"
@@ -159,7 +156,7 @@ function EditTruck() {
       <div className="max-w-8xl mx-auto p-6 bg-gray-50 rounded-lg shadow-lg">
         <div className="flex items-center mb-6">
           <Truck className="text-blue-600 mr-2" size={28} />
-          <h1 className="text-2xl font-bold text-gray-800">Edit Truck</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Add New Truck</h1>
         </div>
 
         <div className="space-y-6">
@@ -201,22 +198,8 @@ function EditTruck() {
                   </label>
                   <select
                     name="carType"
-                    value={truckInfo?.carType}
-                    onChange={(e) => {
-                      const selectedType = e.target.value;
-                      const selectedCategory = reduxTruckCategories?.find(
-                        (cat) => cat?.type === selectedType
-                      );
-
-                      if (selectedCategory) {
-                        setTruckInfo((prev) => ({
-                          ...prev,
-                          carType: selectedCategory?.type,
-                          carPrice: selectedCategory?.baseFare,
-                          carCapacity: selectedCategory?.capacity,
-                        }));
-                      }
-                    }}
+                    value={truckInfo.carType}
+                    onChange={handleTruckTypeSelect}
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="">Select Truck Type</option>
@@ -230,7 +213,7 @@ function EditTruck() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Vehicle Capacity (tons)
+                    Vehicle Capacity
                   </label>
                   <input
                     type="text"
@@ -262,7 +245,7 @@ function EditTruck() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Vehicle Price Rate
+                    Vehicle Base Fare
                   </label>
                   <input
                     type="number"
@@ -292,6 +275,68 @@ function EditTruck() {
                 ></textarea>
               </div>
             </div>
+
+            {/* Right column - Image Upload */}
+            {/* <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Truck Images
+                </label>
+                <div
+                  className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => fileInputRef.current.click()}
+                >
+                  <Camera className="text-gray-400 mb-2" size={36} />
+                  <p className="text-gray-600 text-center">
+                    Click to upload truck images
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    JPG, PNG or GIF up to 5MB
+                  </p>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    accept="image/*"
+                    multiple
+                  />
+                </div>
+              </div>
+
+              {previewUrls.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-gray-700">
+                    Image Preview
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {previewUrls.map((url, index) => (
+                      <div key={index} className="relative">
+                        <img
+                          src={url}
+                          alt={`Truck preview ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-md border border-gray-300"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center mt-6">
+                <Upload className="text-blue-600 mr-2" size={20} />
+                <span className="text-sm text-gray-600">
+                  {images.length} file(s) ready to upload
+                </span>
+              </div>
+            </div> */}
           </div>
 
           <MediaUpload
@@ -305,8 +350,8 @@ function EditTruck() {
           {/* Submit Button */}
           <div className="pt-4 border-t border-gray-200 flex justify-end">
             <FormButton
-              title={"Edit Truck"}
-              onClick={editTruckToListings}
+              title={"Add Truck"}
+              onClick={addTruckToListings}
               loading={loading}
               btnIcon={<Save className="mr-2" size={18} />}
               // opacity={true}
@@ -318,4 +363,4 @@ function EditTruck() {
   );
 }
 
-export default EditTruck;
+export default CreateTruck;

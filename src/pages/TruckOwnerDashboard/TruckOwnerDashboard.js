@@ -35,7 +35,7 @@ const Container = styled.div`
   }
 `;
 
-function Dashboard() {
+function TruckOwnerDashboard() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const state = useSelector((state) => state);
@@ -45,8 +45,6 @@ function Dashboard() {
 
   const reduxTruckListings = state?.user?.truckListings;
   const reduxBookedTrucks = state?.user?.bookedTrucks;
-  const reduxPlatformUsers = state?.user?.platformUsers;
-
   console.log("reduxBookedTrucks", reduxBookedTrucks, reduxTruckListings);
 
   const [loading, setLoading] = useState(false);
@@ -54,12 +52,12 @@ function Dashboard() {
   const fetchTruckListings = async () => {
     try {
       await axiosInstance({
-        url: "api/listings/all-offerings",
+        url: "api/listing/all-truckowner-listing",
         method: "GET",
       })
         .then((res) => {
           console.log("fetchTruckListings res", res?.data);
-          dispatch(saveTruckListings(res?.data?.data));
+          dispatch(saveTruckListings(res?.data));
         })
         .catch((err) => {
           console.log("fetchTruckListings err", err?.response?.data);
@@ -167,6 +165,7 @@ function Dashboard() {
       setLoading(false);
     }
   };
+
   const fetchTruckCategories = async () => {
     setLoading(true);
     try {
@@ -220,13 +219,8 @@ function Dashboard() {
         vehicleCount={reduxTruckListings?.length}
         bookings={reduxBookedTrucks}
         onTruckClick={() => {
-          navigate("/truck-listings");
+          navigate("/truck-owner/truck-listings");
         }}
-        showPlatformUsers={true}
-        onPlatformUsers={() => {
-          navigate("/all-users");
-        }}
-        platformUsersCount={reduxPlatformUsers?.length}
       />
 
       {/* Chart */}
@@ -246,4 +240,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default TruckOwnerDashboard;

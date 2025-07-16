@@ -24,6 +24,18 @@ const initialState = {
 
   // truckowners
   truckOwnersTrucksListings: [],
+  truckDetails: null,
+
+  // drivers listing
+  driversListings: [],
+
+  // truckowner verification
+  isTruckOwnerVerified: null,
+  truckOwnersListings: [],
+  selectedTruckOwner: null,
+
+  // all vtb users
+  platformUsers: [],
 };
 
 const userSlice = createSlice({
@@ -65,6 +77,10 @@ const userSlice = createSlice({
       state.truckListings = null;
       state.bookedTrucks = null;
       state.truckOwnersTrucksListings = [];
+      state.driversListings = [];
+      state.truckOwnersListings = [];
+      state.isTruckOwnerVerified = null;
+      state.platformUsers = [];
     },
     setUserDestination: (state, action) => {
       state.destination = action.payload;
@@ -93,6 +109,24 @@ const userSlice = createSlice({
     clearEditTruckListingData: (state, action) => {
       state.editTruckListing = null;
     },
+    saveTruckDetailsData: (state, action) => {
+      state.truckDetails = action.payload;
+    },
+    saveDriversListings: (state, action) => {
+      state.driversListings = action.payload;
+    },
+    updateTruckOwnerVerififcation: (state, action) => {
+      state.isTruckOwnerVerified = action.payload;
+    },
+    saveTruckOwnersListings: (state, action) => {
+      state.truckOwnersListings = action.payload;
+    },
+    saveSelectedTruckOwner: (state, action) => {
+      state.selectedTruckOwner = action.payload;
+    },
+    savePlatformUsers: (state, action) => {
+      state.platformUsers = action.payload;
+    },
   },
 });
 
@@ -119,5 +153,17 @@ export const {
 
   // truckowner
   saveTruckOnwerTrucksListings,
+  saveTruckDetailsData,
+
+  // drivers
+  saveDriversListings,
+
+  // truckowner verification
+  updateTruckOwnerVerififcation,
+  saveTruckOwnersListings,
+  saveSelectedTruckOwner,
+
+  // vtb users
+  savePlatformUsers,
 } = userSlice.actions;
 export default userSlice.reducer;

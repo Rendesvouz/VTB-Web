@@ -167,6 +167,22 @@ export function formatDate(isoString) {
   return date.toLocaleDateString("en-US", options);
 }
 
+export function formatDateToReadable(dateString) {
+  const date = new Date(dateString);
+
+  const day = date.getDate();
+  const month = date.toLocaleString("default", { month: "long" }); // "June"
+  const year = date.getFullYear();
+
+  const getOrdinal = (n) => {
+    const s = ["th", "st", "nd", "rd"],
+      v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  };
+
+  return `${getOrdinal(day)}, ${month} ${year}`;
+}
+
 export function stripHtml(htmlString) {
   // Replace HTML tags with an empty string
   return htmlString?.replace(/<\/?[^>]+(>|$)/g, "");
@@ -335,6 +351,23 @@ export function normalizeGender(input) {
   }
 
   return "Other";
+}
+
+export function getAgeFromDOB(dobString) {
+  const dob = new Date(dobString);
+  const today = new Date();
+
+  let age = today.getFullYear() - dob.getFullYear();
+
+  const monthDiff = today.getMonth() - dob.getMonth();
+  const dayDiff = today.getDate() - dob.getDate();
+
+  // If birth month/day hasn't occurred yet this year, subtract one
+  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+    age--;
+  }
+
+  return age;
 }
 
 function formatDateMessage(dateString) {
@@ -557,3 +590,95 @@ export const formatToNaira = (number) => {
     minimumFractionDigits: 0,
   }).format(numeric);
 };
+
+export const getDeviceStoreUrl = () => {
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(ua);
+  const isAndroid = /Android/i.test(ua) && isMobile;
+  const isIOS = /iPhone|iPad|iPod/i.test(ua) && !window.MSStream;
+
+  if (isIOS) {
+    return {
+      platform: "iOS",
+      url: "https://apps.apple.com/ng/app/rendezvouscare/id6743152359",
+    };
+  }
+
+  if (isAndroid) {
+    return {
+      platform: "Android",
+      url: "https://play.google.com/store/apps/details?id=com.rendezvouscare",
+    };
+  }
+
+  return {
+    platform: "Desktop",
+    url: null,
+  };
+};
+
+export const getDriverDeviceStoreUrl = () => {
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(ua);
+  const isAndroid = /Android/i.test(ua) && isMobile;
+  const isIOS = /iPhone|iPad|iPod/i.test(ua) && !window.MSStream;
+
+  if (isIOS) {
+    return {
+      platform: "iOS",
+      url: "https://apps.apple.com/ng/app/rendezvouscare/id6743152359",
+    };
+  }
+
+  if (isAndroid) {
+    return {
+      platform: "Android",
+      url: "https://play.google.com/store/apps/details?id=com.rendezvouscare",
+    };
+  }
+
+  return {
+    platform: "Desktop",
+    url: null,
+  };
+};
+
+export function getYearsActive(createdAtISOString) {
+  const createdAt = new Date(createdAtISOString);
+  const now = new Date();
+
+  let years = now.getFullYear() - createdAt.getFullYear();
+
+  const hasNotReachedAnniversary =
+    now.getMonth() < createdAt.getMonth() ||
+    (now.getMonth() === createdAt.getMonth() &&
+      now.getDate() < createdAt.getDate());
+
+  if (hasNotReachedAnniversary) {
+    years -= 1;
+  }
+
+  return years;
+}
+
+export function getTimeActive(createdAtISOString) {
+  const createdAt = new Date(createdAtISOString);
+  const now = new Date();
+
+  const diffInMs = now - createdAt;
+
+  const msInDay = 1000 * 60 * 60 * 24;
+  const msInMonth = msInDay * 30.44; // Approximate month
+  const msInYear = msInDay * 365.25; // Approximate year (accounting for leap years)
+
+  const years = Math.floor(diffInMs / msInYear);
+  if (years >= 1) return `${years} year${years > 1 ? "s" : ""}`;
+
+  const months = Math.floor(diffInMs / msInMonth);
+  if (months >= 1) return `${months} month${months > 1 ? "s" : ""}`;
+
+  const days = Math.floor(diffInMs / msInDay);
+  return `${days} day${days !== 1 ? "s" : ""}`;
+}

@@ -18,7 +18,7 @@ const StyledLabel = styled.label`
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
   font-family: "Montserrat", sans-serif;
-  color: white;
+  color: black;
 `;
 
 const StyledSelectContainer = styled.div`
@@ -36,8 +36,8 @@ const StyledSelect = styled.select`
   -moz-appearance: none; /* Remove default styling on Firefox */
   appearance: none; /* Remove default styling on other browsers */
   background-image: none; /* Remove default dropdown arrow */
-  color: white;
-  background: black;
+  color: black;
+  background: white;
   width: 100%;
 
   &:focus {
@@ -52,7 +52,7 @@ const DropdownArrow = styled.div`
   transform: translateY(-50%);
   pointer-events: none;
   font-size: 1rem;
-  color: white;
+  color: black;
 `;
 
 function FormSelect({

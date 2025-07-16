@@ -11,13 +11,22 @@ import {
   saveEditTruckData,
   saveTruckListings,
 } from "../../redux/features/user/userSlice";
+import TransparentBtn from "../form/TransparentBtn";
 
-const TruckListingTable = ({ bookings = [], tableTitle, assignDriver }) => {
+const TruckListingTable = ({
+  bookings = [],
+  tableTitle,
+  assignDriver,
+  onViewTruck,
+}) => {
   console.log("ddd", bookings);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const state = useSelector((state) => state);
+
+  const userProfle = state?.user?.user;
+  const isTruckOwner = userProfle?.User?.role == "TruckOwner";
 
   const [loading, setLoading] = useState(false);
   const [loadingTruckId, setLoadingTruckId] = useState(null);
@@ -58,9 +67,12 @@ const TruckListingTable = ({ bookings = [], tableTitle, assignDriver }) => {
   };
 
   const handleEdit = async (truckInfo) => {
-    console.log("truckInfo", truckInfo);
+    // console.log("truckInfo", truckInfo);
     dispatch(saveEditTruckData(truckInfo));
-    navigate(`/edit-truck/${truckInfo?.id}`);
+
+    isTruckOwner
+      ? navigate(`/truck-owner/edit-truck/${truckInfo?.id}`)
+      : navigate(`/edit-truck/${truckInfo?.id}`);
   };
 
   const handleDelete = async (truckId) => {
@@ -87,6 +99,39 @@ const TruckListingTable = ({ bookings = [], tableTitle, assignDriver }) => {
     } finally {
       setLoadingTruckId(null);
       setActionType(null);
+    }
+  };
+
+  const toggleInspection = async (truckInfo) => {
+    console.log("toggleInspection", truckInfo);
+    setLoadingTruckId(truckInfo?.id);
+
+    const isInspected = truckInfo?.isInspected;
+
+    try {
+      await axiosInstance({
+        url: `api/listing/isInspected/${truckInfo?.id}`,
+        method: "PUT",
+        data: {
+          isInspected: !isInspected ? true : false,
+        },
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((res) => {
+          console.log("toggleInspection res", res?.data);
+          setLoading(false);
+
+          fetchTruckListings();
+          setLoadingTruckId(null);
+        })
+        .catch((err) => {
+          console.log("toggleInspection err", err?.response?.data);
+          setLoadingTruckId(null);
+        });
+    } finally {
+      setLoadingTruckId(null);
     }
   };
 
@@ -150,35 +195,70 @@ const TruckListingTable = ({ bookings = [], tableTitle, assignDriver }) => {
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
-            <tr>
-              {[
-                // Truck Info
-                "Truck Images",
-                "Truck Name",
-                "Truck Model",
-                "Truck Type",
-                "Truck Capacity",
-                "Truck Location",
-                "Truck Prices",
-                "Truck Model",
+            {isTruckOwner ? (
+              <tr>
+                {[
+                  // Truck Info
+                  "Truck Images",
+                  "Truck Name",
+                  "Truck Model",
+                  "Truck Type",
+                  "Truck Capacity",
+                  "Truck Location",
+                  "Truck Prices",
+                  "Truck Model",
 
-                // driver info
-                "Assigned Driver",
+                  // driver info
+                  "Assigned Driver",
 
-                "Status",
-                "Created At",
-                "Updated At",
-                "Action",
-              ]?.map((header) => (
-                <th
-                  key={header}
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  {header}
-                </th>
-              ))}
-            </tr>
+                  "Status",
+                  "Created At",
+                  "Updated At",
+                  "Action",
+                ]?.map((header) => (
+                  <th
+                    key={header}
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            ) : (
+              <tr>
+                {[
+                  // Truck Info
+                  "Truck Images",
+                  "Truck Name",
+                  "Truck Model",
+                  "Truck Type",
+                  "Truck Capacity",
+                  "Truck Location",
+                  "Truck Prices",
+                  "Truck Model",
+
+                  // driver info
+                  "Assigned Driver",
+
+                  // truck owner info
+                  "Truck Owner",
+
+                  "Status",
+                  "Created At",
+                  "Updated At",
+                  "Action",
+                ]?.map((header) => (
+                  <th
+                    key={header}
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            )}
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {sortedPaginatedBookings?.map((truck, i) => {
@@ -191,7 +271,7 @@ const TruckListingTable = ({ bookings = [], tableTitle, assignDriver }) => {
                       <div className="flex-shrink-0 h-10 w-10">
                         <img
                           className="h-10 w-10 rounded-full"
-                          src={truck?.pictures}
+                          src={truck?.pictures?.[0]}
                           alt=""
                         />
                       </div>
@@ -235,6 +315,14 @@ const TruckListingTable = ({ bookings = [], tableTitle, assignDriver }) => {
                       {truck?.matchedDriverProfile?.fullName}
                     </div>
                   </td>
+
+                  {!isTruckOwner && (
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {truck?.truckOwnerProfile?.fullname}
+                      </div>
+                    </td>
+                  )}
 
                   {/* Status */}
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -282,30 +370,78 @@ const TruckListingTable = ({ bookings = [], tableTitle, assignDriver }) => {
                   </td>
 
                   <td className="px-6 py-4 whitespace-nowrap flex items-center gap-2">
-                    <button
-                      onClick={() => handleEdit(truck)}
-                      className="px-3 py-1 text-sm font-medium text-blue-600 bg-blue-100 rounded hover:bg-blue-200"
-                    >
-                      Edit
-                    </button>
+                    {isTruckOwner && (
+                      <button
+                        onClick={() => handleEdit(truck)}
+                        className="px-3 py-1 text-sm font-medium text-blue-600 bg-blue-100 rounded hover:bg-blue-200"
+                      >
+                        Edit
+                      </button>
+                    )}
+
+                    {isTruckOwner && (
+                      <button
+                        onClick={() => handleDelete(truck?.id)}
+                        disabled={
+                          loadingTruckId === truck.id && actionType === "delete"
+                        }
+                        className={`px-3 py-1 text-sm font-medium rounded ${
+                          loadingTruckId === truck.id && actionType === "delete"
+                            ? "bg-red-300 text-white cursor-not-allowed"
+                            : "text-red-600 bg-red-100 hover:bg-red-200"
+                        }`}
+                      >
+                        {loadingTruckId === truck.id && actionType === "delete"
+                          ? "Deleting..."
+                          : "Delete"}
+                      </button>
+                    )}
+                    {!isTruckOwner && (
+                      <div className="flex gap-2">
+                        {/* Inspection Button */}
+                        {!truck?.isInspected ? (
+                          <button
+                            onClick={() => {
+                              toggleInspection(truck);
+                            }}
+                            className="px-3 py-1 text-sm font-medium text-green-600 bg-green-100 border border-green-400 rounded"
+                          >
+                            {loadingTruckId === truck?.id
+                              ? "Loading"
+                              : "Mark as Inspected"}
+                          </button>
+                        ) : (
+                          <>
+                            <button
+                              disabled
+                              className="px-3 py-1 text-sm font-medium text-gray-600 bg-gray-100 border border-gray-300 rounded cursor-default"
+                            >
+                              Inspection Complete
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                toggleInspection(truck);
+                              }}
+                              className="px-3 py-1 text-sm font-medium text-red-600 bg-red-100 border border-red-400 rounded"
+                            >
+                              Delist Truck
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
 
                     <button
-                      onClick={() => handleDelete(truck?.id)}
-                      disabled={
-                        loadingTruckId === truck.id && actionType === "delete"
-                      }
-                      className={`px-3 py-1 text-sm font-medium rounded ${
-                        loadingTruckId === truck.id && actionType === "delete"
-                          ? "bg-red-300 text-white cursor-not-allowed"
-                          : "text-red-600 bg-red-100 hover:bg-red-200"
-                      }`}
+                      onClick={() => {
+                        onViewTruck(truck);
+                      }}
+                      className="px-3 py-1 text-sm font-medium text-blue-600 bg-white-100 border-2 border-blue-400 rounded"
                     >
-                      {loadingTruckId === truck.id && actionType === "delete"
-                        ? "Deleting..."
-                        : "Delete"}
+                      View Truck
                     </button>
 
-                    {!truck?.driverId && (
+                    {!truck?.driverId && isTruckOwner && (
                       <button
                         onClick={() => assignDriver(truck)}
                         className="px-3 py-1 text-sm font-medium text-green-600 bg-green-100 rounded hover:bg-green-200"

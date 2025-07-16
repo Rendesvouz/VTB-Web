@@ -24,11 +24,12 @@ function FormTextArea({
   maxLength,
   inputBackgroundColor,
   inputColor,
+  borderColor,
 }) {
   return (
     <InputContainer width={width}>
       <label
-        style={{ marginBottom: "0.5rem", fontSize: "0.9rem", color: "white" }}
+        style={{ marginBottom: "0.5rem", fontSize: "0.9rem", color: "black" }}
         htmlFor="referral-code"
       >
         {formTitle}
@@ -43,7 +44,8 @@ function FormTextArea({
           // width: "98%",
           padding: "0.75rem",
           fontSize: "1rem",
-          borderColor: "gray",
+          borderColor: borderColor ? borderColor : "gray",
+          borderWidth: 1,
           borderRadius: "5px",
           backgroundColor: inputBackgroundColor
             ? inputBackgroundColor

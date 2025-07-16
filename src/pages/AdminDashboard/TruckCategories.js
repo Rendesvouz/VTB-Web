@@ -72,6 +72,10 @@ function TruckCategories() {
           setLoading(false);
           toast.success("Truck category created successfully");
           closeModal();
+          setTruckType("");
+          setTruckBaseFare("");
+          setTruckCapacity("");
+          setTruckDimension("");
           fetchTruckCategories();
         })
         .catch((err) => {

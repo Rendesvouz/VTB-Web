@@ -111,13 +111,8 @@ function EditTruck() {
     formData?.append("price[]", [truckInfo?.carPrice]);
     // formData?.append("pictures", images);
 
-    // images?.map((image) => {
-    //   formData?.append(`pictures`, image);
-    // });
-
-    images?.forEach((img, index) => {
-      console.log("ddd", img);
-      formData.append("pictures", img);
+    images?.map((image) => {
+      formData?.append(`pictures`, image);
     });
 
     console.log("formData:", formData, images);
@@ -136,7 +131,7 @@ function EditTruck() {
           console.log("editTruckToListings res", res?.data);
           setLoading(false);
           dispatch(clearEditTruckListingData());
-          navigate("/truck-owner/truck-listings");
+          navigate("/truck-listings");
         })
         .catch((err) => {
           console.log("editTruckToListings err", err?.response);
@@ -230,7 +225,7 @@ function EditTruck() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Vehicle Capacity (tons)
+                    Vehicle Capacity
                   </label>
                   <input
                     type="text"

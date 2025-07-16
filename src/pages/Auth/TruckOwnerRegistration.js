@@ -9,17 +9,13 @@ import FormButton from "../../components/form/FormButton";
 import { COLORS } from "../../themes/themes";
 import axiosInstance from "../../utils/api-client";
 import {
-  getUser,
   saveAccessToken,
   saveLoginTime,
   saveRefreshToken,
   saveUserRole,
 } from "../../redux/features/user/userSlice";
 import { showToast } from "../../utils/toastify";
-import {
-  getDeviceStoreUrl,
-  getDriverDeviceStoreUrl,
-} from "../../Library/Common";
+import { toast } from "react-toastify";
 
 const Container = styled.div`
   display: flex;
@@ -153,7 +149,7 @@ const ForgetPasswordLink = styled.p`
   }
 `;
 
-function Home() {
+function TruckOwnerRegistration() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const state = useSelector((state) => state);
@@ -167,33 +163,34 @@ function Home() {
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
-  const login = async () => {
-    const loginData = {
-      identifier: email,
+  const registerTruckOwner = async () => {
+    const registerData = {
+      email: email,
       password: password,
+      role: "TruckOwner",
     };
 
-    console.log("loginData", loginData);
+    console.log("registerData", registerData);
 
     if (!password) {
-      setFormError("Invalid Login details, please try again");
+      setFormError("Invalid details, please try again");
     } else {
       setLoading(true);
       try {
         await axiosInstance({
-          url: "api/auth/login",
+          url: "api/auth/truckowner-signup",
           method: "POST",
-          data: loginData,
+          data: registerData,
           headers: {
             "Content-Type": "application/json",
           },
         })
           .then((res) => {
-            console.log("res", res?.data);
+            console.log("registerTruckOwner res", res?.data);
             setLoading(false);
 
             if (res?.data) {
-              console.log("Login data", res?.data);
+              console.log("registerTruckOwner data", res?.data);
               dispatch(saveUserRole(res?.data?.role));
 
               // save the AccessToken and RefreshToken to redux here immediately
@@ -201,136 +198,24 @@ function Home() {
               dispatch(saveRefreshToken(res?.data?.refresh_token));
               dispatch(saveLoginTime(Date.now()));
 
-              // here i am prompting the driver and users to download and install the app
-              if (res?.data?.role === "User") {
-                const { platform, url } = getDeviceStoreUrl();
-                console.log("platform", platform, url);
+              showToast("Account Registered successfully", "success");
 
-                if (url) {
-                  showToast(
-                    `Hello, Please download the app on your ${platform} device to continue enjoying our services`
-                  );
-
-                  setTimeout(() => {
-                    window.open(url, "_blank");
-                  }, 2000);
-                } else {
-                  setFormError(
-                    "Please download the app on your mobile device to continue."
-                  );
-                }
-
-                return;
-              } else if (res?.data?.role === "Driver") {
-                const { platform, url } = getDriverDeviceStoreUrl();
-                console.log("platform", platform, url);
-
-                if (url) {
-                  showToast(
-                    `Hello Driver, Please download the app on your ${platform} device to continue enjoying our services`
-                  );
-
-                  setTimeout(() => {
-                    window.open(url, "_blank");
-                  }, 2000);
-                } else {
-                  setFormError(
-                    "Please download the app on your mobile device to continue."
-                  );
-                }
-
-                return;
-              } else if (res?.data?.role == "TruckOwner") {
-                checkTruckOwnerProfile(res?.data?.access_token);
-              } else if (res?.data?.role == "Admin") {
-                const adminUserData = {
-                  User: {
-                    email: "admin@vtb.com",
-                    verified: true,
-                    phoneNumber: "0987654231",
-                    role: "Admin",
-                    id: res?.data?.id,
-                  },
-                };
-                console.log("adminUserData", adminUserData);
-
-                dispatch(getUser(adminUserData));
-              }
+              navigate("/email-verification");
             } else {
               console.log("message", res?.data?.message);
               setFormError("Invalid Details, please try again later");
+              showToast("Error registering account", "error");
             }
           })
           .catch((err) => {
-            console.log("Login err", err?.response);
-            setFormError("Invalid Login details, please try again");
-
+            console.log("registerTruckOwner err", err?.response);
             setLoading(false);
+            showToast("Error registering account", "error");
           });
       } catch (error) {
-        console.log("Login error", error);
-      }
-    }
-  };
-
-  const checkUserProfile = async (access_token) => {
-    console.log("dfff", access_token);
-    try {
-      if (!access_token) {
-        return;
-      }
-
-      const profileResponse = await axiosInstance({
-        url: "api/profile/profile",
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-        },
-      });
-
-      console.log("profdd", profileResponse?.data);
-
-      if (profileResponse?.data) {
-        dispatch(getUser(profileResponse?.data));
-
-        if (profileResponse?.data?.User?.role == "TruckOwner") {
-          navigate("/admin-dashboard");
-        } else if (profileResponse?.data?.User?.role == "Admin") {
-          navigate("/admin-dashboard");
-        }
-        showToast("Login Successful. Welcome Back! 😇", "success");
-      }
-    } catch (error) {
-      console.error("checkUserProfile check error:", error);
-    }
-  };
-
-  const checkTruckOwnerProfile = async (access_token) => {
-    try {
-      if (!access_token) {
-        return;
-      }
-
-      const profileResponse = await axiosInstance({
-        url: "api/profile/truckprofile",
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-        },
-      });
-
-      console.log("checkTruckOwnerProfile res", profileResponse?.data);
-      if (profileResponse?.data?.truckownerId) {
-        dispatch(getUser(profileResponse?.data));
-
-        showToast("Login Successful. Welcome Back! 😇", "success");
-      } else {
-        navigate("/truck-owner/onboarding");
-      }
-    } catch (error) {
-      console.error("checkTruckOwnerProfile check error:", error);
-      if (error?.response?.status == 404) {
-        navigate("/truck-owner/onboarding");
+        console.log("registerTruckOwner error", error);
+        setLoading(false);
+        showToast("Error registering account", "error");
       }
     }
   };
@@ -368,37 +253,10 @@ function Home() {
             errorMessage={passwordError}
           />
 
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignContent: "center",
-              alignItems: "center",
-              alignSelf: "center",
-            }}
-          >
-            <CheckboxGroup>
-              <input type="checkbox" id="terms" />
-              <label style={{ color: "grey" }} htmlFor="terms">
-                Remember me
-              </label>
-            </CheckboxGroup>
-
-            <ForgetPasswordLink
-              onClick={() => {
-                console.log("clicked");
-                navigate("/forget-password");
-              }}
-            >
-              Forget Password ?
-            </ForgetPasswordLink>
-          </div>
-
           <FormButton
-            title={"Login"}
+            title={"Register"}
             width={"100%"}
-            onClick={login}
+            onClick={registerTruckOwner}
             marginLeft={"0px"}
             loading={loading}
             errorMessage={formError}
@@ -414,16 +272,16 @@ function Home() {
               marginTop: 20,
             }}
           >
-            Don't have an account?{" "}
+            Already have an account?{" "}
             <span
-              onClick={() => navigate("/register")}
+              onClick={() => navigate("/login")}
               style={{
                 color: COLORS.vtbBtnColor,
                 cursor: "pointer",
                 textDecoration: "underline",
               }}
             >
-              Register
+              Login
             </span>
           </p>
         </FormSection>
@@ -432,4 +290,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default TruckOwnerRegistration;

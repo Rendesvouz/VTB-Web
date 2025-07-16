@@ -1,18 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
 import { AiOutlineMenu } from "react-icons/ai";
-import * as FaIcons from "react-icons/fa";
 import * as AiIcons from "react-icons/ai";
-import { SidebarData } from "./SidebarData";
+import { SidebarData, TruckOwnerSidebarData } from "./SidebarData";
 import SubMenu from "./SubMenu";
 import { IconContext } from "react-icons/lib";
-import SearchBar from "../search/SearchBar";
-import FormButton from "../form/FormButton";
-import { MdFileUpload } from "react-icons/md";
 import { RiLogoutBoxLine } from "react-icons/ri";
 import { signOut } from "../../redux/features/user/userSlice";
 import VTBLogo from "../../assets/VTBNoBgLogo.png";
@@ -66,44 +62,8 @@ const SidebarNav = styled.nav`
   scrollbar-width: none; /* Firefox */
 `;
 
-const UploadBtn = styled.div`
-  display: flex;
-
-  @media screen and (max-width: 768px) {
-    display: none;
-  }
-`;
-
 const SidebarWrap = styled.div`
   width: 100%;
-`;
-
-const SidebarProfileSection = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  display: flex;
-  align-content: center;
-  align-items: center;
-  padding-right: 30px;
-
-  @media screen and (max-width: 768px) {
-    display: none;
-  }
-`;
-
-const SidebarNavLinks = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  display: flex;
-  align-content: center;
-  align-items: center;
-  padding-right: 30px;
-
-  @media screen and (max-width: 768px) {
-    display: none;
-  }
 `;
 
 const SidebarLink = styled(Link)`
@@ -158,25 +118,6 @@ const HamburgerContainer = styled.div`
   padding-right: 10px;
 `;
 
-const navData = [
-  {
-    title: "Discover",
-    path: "/discover",
-  },
-  {
-    title: "Streaming Platforms",
-    path: "/streaming-platforms",
-  },
-  {
-    title: "Promotions",
-    path: "/promotions",
-  },
-  {
-    title: "Partnerships",
-    path: "/partnership-procedure",
-  },
-];
-
 const HamburgerMenu = ({ toggleSidebar, sidebar }) => (
   <div onClick={toggleSidebar} style={{ cursor: "pointer" }}>
     {sidebar ? (
@@ -189,21 +130,18 @@ const HamburgerMenu = ({ toggleSidebar, sidebar }) => (
 
 const Sidebar = () => {
   const sidebarRef = useRef(null);
-  const location = useLocation();
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
   const state = useSelector((state) => state);
 
   const loggedInUser = state?.user?.user;
-  const hiddenUploadPaths = ["/upload-tracks", "/upload-video"];
 
   function logout() {
     dispatch(signOut());
     navigate("/");
   }
 
-  const isSmallScreen = window.innerWidth <= 1300;
   const [sidebar, setSidebar] = useState(false);
 
   const showSidebar = () => setSidebar(!sidebar);
@@ -271,11 +209,25 @@ const Sidebar = () => {
               />
             </NavIcon>
 
-            {SidebarData.map((item, index) => {
-              return (
-                <SubMenu item={item} key={index} closeSidebar={showSidebar} />
-              );
-            })}
+            {loggedInUser?.User?.role === "TruckOwner"
+              ? TruckOwnerSidebarData?.map((item, index) => {
+                  return (
+                    <SubMenu
+                      item={item}
+                      key={index}
+                      closeSidebar={showSidebar}
+                    />
+                  );
+                })
+              : SidebarData?.map((item, index) => {
+                  return (
+                    <SubMenu
+                      item={item}
+                      key={index}
+                      closeSidebar={showSidebar}
+                    />
+                  );
+                })}
             <SidebarLink to={"/"} onClick={logout}>
               <div
                 style={{

@@ -1,7 +1,21 @@
 import { useState } from "react";
-import { Truck, Map, DollarSign, Calendar, User } from "lucide-react";
+import {
+  Truck,
+  DollarSign,
+  Calendar,
+  TruckElectric,
+  Users,
+} from "lucide-react";
 
-function DashboardCards({ vehicles, vehicleCount, bookings, onTruckClick }) {
+function DashboardCards({
+  vehicles,
+  vehicleCount,
+  bookings,
+  onTruckClick,
+  showPlatformUsers,
+  onPlatformUsers,
+  platformUsersCount,
+}) {
   return (
     // Dashboard Stats
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 cursor-pointer">
@@ -51,16 +65,26 @@ function DashboardCards({ vehicles, vehicleCount, bookings, onTruckClick }) {
         {/* <p className="text-sm text-gray-500">Next 7 days</p> */}
       </div>
 
-      <div className="bg-white p-4 rounded shadow">
-        <div className="flex items-center space-x-2">
-          <User className="text-purple-500" />
-          <span className="font-semibold">Truck Owners</span>
+      {showPlatformUsers ? (
+        <div className="bg-white p-4 rounded shadow" onClick={onPlatformUsers}>
+          <div className="flex items-center space-x-2">
+            <Users className="text-blue-500" />
+            <span className="font-semibold">Platform Users</span>
+          </div>
+          <p className="text-2xl font-bold mt-2">{platformUsersCount}</p>
         </div>
-        <p className="text-2xl font-bold mt-2">
-          {bookings?.filter((b) => b?.status === "Pending")?.length}
-        </p>
-        {/* <p className="text-sm text-gray-500">Next 7 days</p> */}
-      </div>
+      ) : (
+        <div className="bg-white p-4 rounded shadow">
+          <div className="flex items-center space-x-2">
+            <TruckElectric className="text-purple-500" />
+            <span className="font-semibold">Deliveries</span>
+          </div>
+          <p className="text-2xl font-bold mt-2">
+            {bookings?.filter((b) => b?.status === "Pending")?.length}
+          </p>
+          {/* <p className="text-sm text-gray-500">Next 7 days</p> */}
+        </div>
+      )}
     </div>
   );
 }

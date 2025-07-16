@@ -14,7 +14,6 @@ const Card = styled.div`
   margin: 10px;
   text-align: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  background: black;
 
   @media (max-width: 768px) {
     width: 80%;
@@ -22,7 +21,7 @@ const Card = styled.div`
 `;
 
 const Title = styled.h2`
-  color: #05a30b;
+  color: #376ea4;
   font-size: 24px;
   margin-bottom: 20px;
 `;
@@ -36,12 +35,12 @@ const UploadArea = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #000;
+  // background: #000;
 `;
 
 const UploadText = styled.p`
   margin: 0;
-  color: #fff;
+  color: #000;
 `;
 
 const UploadIcon = styled(MdFileUpload)`
@@ -212,10 +211,10 @@ const UploadCard = ({
           onDrop={handleDrop}
           onDragLeave={handleDragLeave}
         >
-          <UploadIcon style={{ fontSize: 48, color: "#05a30b" }} />
+          <UploadIcon style={{ fontSize: 48, color: "#376ea4" }} />
           <UploadText>
             Drag & drop files or{" "}
-            <a href="#," style={{ color: "#05a30b" }}>
+            <a href="#," style={{ color: "#376ea4" }}>
               Browse
             </a>
           </UploadText>

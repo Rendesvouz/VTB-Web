@@ -58,7 +58,7 @@ const CancelIcon = styled.div`
 `;
 
 function FileUpload({
-  fileType,
+  fileType = "*/*",
   onFileUpload,
   selectedFile,
   previewUrl,
@@ -72,49 +72,48 @@ function FileUpload({
     fileInputRef.current.click();
   };
 
+  const renderPreview = () => {
+    const type = selectedFile?.type;
+
+    if (!selectedFile) return null;
+
+    if (type?.startsWith("video/")) {
+      return (
+        <VideoPreview controls>
+          <source src={previewUrl} type={type} />
+          Your browser does not support the video tag.
+        </VideoPreview>
+      );
+    } else if (type?.startsWith("image/")) {
+      return <PreviewImage src={previewUrl} alt="Preview" />;
+    } else if (type === "application/pdf") {
+      return (
+        <iframe
+          src={previewUrl}
+          title="PDF Preview"
+          width="100%"
+          height="400px"
+          style={{ border: "1px solid #ccc", borderRadius: "8px" }}
+        />
+      );
+    } else {
+      return (
+        <PreviewText>
+          📄 {selectedFile.name || "Unsupported preview – file selected."}
+        </PreviewText>
+      );
+    }
+  };
+
   return (
     <div>
       {selectedFile ? (
-        selectedFile?.type?.startsWith("video/") ? (
-          <FilePreviewContainer>
-            <CancelIcon onClick={handleCancel}>
-              <IoCloseSharp size={20} color="white" />
-            </CancelIcon>
-            <VideoPreview controls>
-              <source src={previewUrl} type={selectedFile.type} />
-              Your browser does not support the video tag.
-            </VideoPreview>
-            <PreviewText>{selectedFile.name}</PreviewText>
-            <TransparentBtn
-              title={"Upload Video"}
-              onClick={onFileUpload}
-              color={"black"}
-              loading={loading}
-              width={"100%"}
-              loadingTitle={"Uploading ..."}
-            />
-          </FilePreviewContainer>
-        ) : selectedFile?.type?.startsWith("image/") ? (
-          <FilePreviewContainer>
-            <CancelIcon onClick={handleCancel}>
-              <IoCloseSharp size={20} color="white" />
-            </CancelIcon>
-            {previewUrl && <PreviewImage src={previewUrl} alt="Preview" />}
-            <PreviewText>{selectedFile.name}</PreviewText>
-            <TransparentBtn
-              title={"Upload Video"}
-              onClick={onFileUpload}
-              loading={loading}
-              color={"black"}
-              width={"100%"}
-              loadingTitle={"Uploading Video ..."}
-            />
-          </FilePreviewContainer>
-        ) : (
-          <DottedBorderContainer onClick={handleClick}>
-            Unsupported file type
-          </DottedBorderContainer>
-        )
+        <FilePreviewContainer>
+          <CancelIcon onClick={handleCancel}>
+            <IoCloseSharp size={20} color="white" />
+          </CancelIcon>
+          {renderPreview()}
+        </FilePreviewContainer>
       ) : (
         <DottedBorderContainer onClick={handleClick}>
           Click here to select a file

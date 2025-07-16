@@ -29,6 +29,7 @@ function FormInput({
   inputBackgroundColor,
   inputColor,
   formTitleColor,
+  disabled,
 }) {
   return (
     <InputContainer width={width}>
@@ -50,6 +51,7 @@ function FormInput({
         value={value}
         onChange={onChange}
         multiple={multiple}
+        disabled={disabled}
         style={{
           padding: "0.75rem",
           borderRadius: 5,

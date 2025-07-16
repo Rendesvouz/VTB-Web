@@ -197,7 +197,7 @@ const Footer = () => {
       </FooterSection>
 
       <Copyright>
-        © {currentYear} Copyright. Vantruckbus, All rights reserved.
+        © {currentYear} Copyright. VanTruckBus Logistics, All rights reserved.
       </Copyright>
     </FooterContainer>
   );
