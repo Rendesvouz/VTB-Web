@@ -425,7 +425,9 @@ const TruckListingTable = ({
                               }}
                               className="px-3 py-1 text-sm font-medium text-red-600 bg-red-100 border border-red-400 rounded"
                             >
-                              Delist Truck
+                              {loadingTruckId === truck?.id
+                                ? "Delisting"
+                                : "Delist Truck"}
                             </button>
                           </>
                         )}
