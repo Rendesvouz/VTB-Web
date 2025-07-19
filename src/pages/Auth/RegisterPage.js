@@ -23,7 +23,7 @@ const RegisterPage = () => {
 
   const roles = [
     {
-      id: "truck-owner",
+      id: "vehicle-owner",
       title: "Truck Owner",
       shortDescription:
         "Manage your fleet and drivers through our web platform",
@@ -41,7 +41,7 @@ const RegisterPage = () => {
         "Complete web platform setup",
       ],
       webAccess: {
-        url: "https://dashboard.rendezvous.com/truck-owners",
+        url: "https://dashboard.rendezvous.com/vehicle-owners",
         features: [
           "Fleet Management",
           "Driver Analytics",
@@ -144,7 +144,7 @@ const RegisterPage = () => {
 
   const accessWebPlatform = () => {
     // window.open(selectedRole.webAccess.url, "_blank");
-    navigate("/truck-owner/register");
+    navigate("/vehicle-owner/register");
   };
 
   const HighlightBubbles = () => (

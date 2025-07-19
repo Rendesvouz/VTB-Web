@@ -131,7 +131,7 @@ function EditTruck() {
           console.log("editTruckToListings res", res?.data);
           setLoading(false);
           dispatch(clearEditTruckListingData());
-          navigate("/truck-listings");
+          navigate("/vehicle-listings");
         })
         .catch((err) => {
           console.log("editTruckToListings err", err?.response);

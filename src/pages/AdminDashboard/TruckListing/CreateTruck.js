@@ -136,7 +136,7 @@ function CreateTruck() {
         .then((res) => {
           console.log("addTruckToListings res", res?.data);
           setLoading(false);
-          navigate("/truck-owner/truck-listings");
+          navigate("/vehicle-owner/vehicle-listings");
         })
         .catch((err) => {
           console.log("addTruckToListings err", err?.response);
@@ -160,7 +160,9 @@ function CreateTruck() {
         <div className="max-w-8xl mx-auto p-6 bg-gray-50 rounded-lg shadow-lg">
           <div className="flex items-center mb-6">
             <Truck className="text-blue-600 mr-2" size={28} />
-            <h1 className="text-2xl font-bold text-gray-800">Add New Truck</h1>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Add New Vehicle
+            </h1>
           </div>
 
           <div className="space-y-6">
@@ -354,7 +356,7 @@ function CreateTruck() {
             {/* Submit Button */}
             <div className="pt-4 border-t border-gray-200 flex justify-end">
               <FormButton
-                title={"Add Truck"}
+                title={"Add Vehicle"}
                 onClick={addTruckToListings}
                 loading={loading}
                 btnIcon={<Save className="mr-2" size={18} />}

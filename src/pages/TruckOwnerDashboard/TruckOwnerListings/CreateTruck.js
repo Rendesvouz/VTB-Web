@@ -133,7 +133,7 @@ function CreateTruck() {
         .then((res) => {
           console.log("addTruckToListings res", res?.data);
           setLoading(false);
-          navigate("/truck-listings");
+          navigate("/vehicle-listings");
         })
         .catch((err) => {
           console.log("addTruckToListings err", err?.response);

@@ -85,13 +85,13 @@ function TruckOwnersListings() {
     <Container>
       <div className="flex justify-between items-center 500 p-4">
         <h1 className="text-2xl font-bold text-gray-900">
-          Truck Owners Listing
+          Vehicle Owners Listing
         </h1>
       </div>
 
       <TruckOwnersListingTable
         props={reduxTruckOwnersListings}
-        tableTitle={"Truck Owners Listing"}
+        tableTitle={"Vehicle Owners Listing"}
       />
     </Container>
   );

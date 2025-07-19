@@ -3,17 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
 import PaginationComponent from "./PaginationComp";
-import { formatDate, formatToNaira, getAgeFromDOB } from "../../Library/Common";
+import { formatDate, getAgeFromDOB } from "../../Library/Common";
 import TransparentBtn from "../form/TransparentBtn";
-import FormButton from "../form/FormButton";
-import {
-  getAvailabilityStyles,
-  getEmploymentStyles,
-} from "../../Library/Precedence";
+import { getEmploymentStyles } from "../../Library/Precedence";
 import axiosInstance from "../../utils/api-client";
-import { saveDriversListings } from "../../redux/features/user/userSlice";
+import {
+  saveDriversListings,
+  saveSelectedDriver,
+} from "../../redux/features/user/userSlice";
 
-function DriversListingTable({ props = [], tableTitle, onViewDriver }) {
+function DriversListingTable({ props = [], tableTitle }) {
   console.log("driverTable props", props);
 
   const navigate = useNavigate();
@@ -22,6 +21,15 @@ function DriversListingTable({ props = [], tableTitle, onViewDriver }) {
 
   const userProfle = state?.user?.user;
   const isTruckOwner = userProfle?.User?.role == "TruckOwner";
+  const loggedInTruckOwnerId = userProfle?.truckownerId;
+
+  const assignedDrivers = props?.filter(
+    (driver) => driver?.truckownerId === loggedInTruckOwnerId
+  );
+
+  const checkIfIsTruckOwnerToDisplayDrivers = isTruckOwner
+    ? assignedDrivers
+    : props;
 
   const [loading, setLoading] = useState(false);
   const [loadingDriverId, setLoadingDriverId] = useState(null);
@@ -35,7 +43,7 @@ function DriversListingTable({ props = [], tableTitle, onViewDriver }) {
     setSortOption(e.target.value);
   };
 
-  const sortedDrivers = [...props]?.sort((a, b) => {
+  const sortedDrivers = checkIfIsTruckOwnerToDisplayDrivers?.sort((a, b) => {
     if (sortOption === "alphabetical") {
       return a?.username?.localeCompare(b?.username);
     } else if (sortOption === "recent") {
@@ -60,19 +68,32 @@ function DriversListingTable({ props = [], tableTitle, onViewDriver }) {
   const handleSuspend = async (driverInfo) => {
     console.log("driverInfo", driverInfo);
 
-    const isActivating = driverInfo?.isSuspended;
-    setActionType(isActivating ? "activate" : "suspend");
+    const currentStatus = driverInfo?.User?.verification?.verificationStatus;
+
+    let newStatus = currentStatus;
+    let action = "";
+
+    // Decide action and target status
+    if (currentStatus === "pending" || currentStatus === "rejected") {
+      newStatus = "verified";
+      action = "activate";
+    } else if (currentStatus === "verified") {
+      newStatus = "rejected";
+      action = "suspend";
+    }
+
+    setActionType(action);
     setLoadingDriverId(driverInfo?.driverId);
+    console.log("newStatus", newStatus);
 
     try {
-      const invertedSuspensionValue = !driverInfo?.isSuspended;
-      console.log("invertedSuspensionValue", invertedSuspensionValue);
+      console.log("newStatus", newStatus);
 
       const res = await axiosInstance({
-        url: `api/profile/${driverInfo?.driverId}/querystatus`,
-        method: "PATCH",
+        url: `api/verification/status/${driverInfo?.driverId}`,
+        method: "PUT",
         data: {
-          isSuspended: invertedSuspensionValue,
+          verificationStatus: newStatus,
         },
         headers: {
           "Content-Type": "application/json",
@@ -191,7 +212,7 @@ function DriversListingTable({ props = [], tableTitle, onViewDriver }) {
                 "Age",
 
                 // driver info
-                "Assigned Truck",
+                "Assigned Vehicle",
 
                 // Employer info
                 "Employer",
@@ -241,8 +262,9 @@ function DriversListingTable({ props = [], tableTitle, onViewDriver }) {
 
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {driver?.assignedTruck?.car_name} - (
-                      {driver?.assignedTruck?.type})
+                      {driver?.assignedTruck
+                        ? driver?.assignedTruck?.car_name
+                        : null}
                     </div>
                   </td>
 
@@ -287,27 +309,39 @@ function DriversListingTable({ props = [], tableTitle, onViewDriver }) {
                         className={`px-3 py-1 text-sm font-medium rounded ${
                           loadingDriverId === driver?.driverId
                             ? "bg-gray-300 text-white cursor-not-allowed"
-                            : driver?.isSuspended
-                            ? "text-green-600 bg-green-100 hover:bg-green-200"
-                            : "text-red-600 bg-red-100 hover:bg-red-200"
+                            : driver?.User?.verification?.verificationStatus ===
+                              "verified"
+                            ? "text-red-600 bg-red-100 hover:bg-red-200"
+                            : "text-green-600 bg-green-100 hover:bg-green-200"
                         }`}
                       >
                         {loadingDriverId === driver?.driverId
                           ? actionType === "suspend"
                             ? "Suspending..."
                             : "Activating..."
-                          : driver?.isSuspended
-                          ? "Activate"
-                          : "Suspend"}
+                          : driver?.User?.verification?.verificationStatus ===
+                            "verified"
+                          ? "Suspend"
+                          : "Verify"}
                       </button>
                     )}
 
-                    <TransparentBtn
-                      title="View Profile"
+                    <button
                       onClick={() => {
-                        onViewDriver(driver);
+                        // save data to redux
+                        dispatch(saveSelectedDriver(driver));
+
+                        isTruckOwner
+                          ? // navigate to the profile
+                            navigate(
+                              `/vehicle-owner/driver/profile/${driver?.driverId}`
+                            )
+                          : navigate(`/driver/profile/${driver?.driverId}`);
                       }}
-                    />
+                      className="px-3 py-1 text-sm font-medium text-blue-600 bg-white-100 border-2 border-blue-400 rounded"
+                    >
+                      View Profile
+                    </button>
                   </td>
                 </tr>
               );

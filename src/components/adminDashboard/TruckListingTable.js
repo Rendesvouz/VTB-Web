@@ -71,8 +71,8 @@ const TruckListingTable = ({
     dispatch(saveEditTruckData(truckInfo));
 
     isTruckOwner
-      ? navigate(`/truck-owner/edit-truck/${truckInfo?.id}`)
-      : navigate(`/edit-truck/${truckInfo?.id}`);
+      ? navigate(`/vehicle-owner/edit-vehicle/${truckInfo?.id}`)
+      : navigate(`/edit-vehicle/${truckInfo?.id}`);
   };
 
   const handleDelete = async (truckId) => {
@@ -199,14 +199,14 @@ const TruckListingTable = ({
               <tr>
                 {[
                   // Truck Info
-                  "Truck Images",
-                  "Truck Name",
-                  "Truck Model",
-                  "Truck Type",
-                  "Truck Capacity",
-                  "Truck Location",
-                  "Truck Prices",
-                  "Truck Model",
+                  "Vehicle Images",
+                  "Vehicle Name",
+                  "Vehicle Model",
+                  "Vehicle Type",
+                  "Vehicle Capacity",
+                  "Vehicle Location",
+                  "Vehicle Prices",
+                  "Vehicle Model",
 
                   // driver info
                   "Assigned Driver",
@@ -229,20 +229,20 @@ const TruckListingTable = ({
               <tr>
                 {[
                   // Truck Info
-                  "Truck Images",
-                  "Truck Name",
-                  "Truck Model",
-                  "Truck Type",
-                  "Truck Capacity",
-                  "Truck Location",
-                  "Truck Prices",
-                  "Truck Model",
+                  "Vehicle Images",
+                  "Vehicle Name",
+                  "Vehicle Model",
+                  "Vehicle Type",
+                  "Vehicle Capacity",
+                  "Vehicle Location",
+                  "Vehicle Prices",
+                  "Vehicle Model",
 
                   // driver info
                   "Assigned Driver",
 
                   // truck owner info
-                  "Truck Owner",
+                  "Vehicle Owner",
 
                   "Status",
                   "Created At",
@@ -427,7 +427,7 @@ const TruckListingTable = ({
                             >
                               {loadingTruckId === truck?.id
                                 ? "Delisting"
-                                : "Delist Truck"}
+                                : "Delist Vehicle"}
                             </button>
                           </>
                         )}
@@ -440,7 +440,7 @@ const TruckListingTable = ({
                       }}
                       className="px-3 py-1 text-sm font-medium text-blue-600 bg-white-100 border-2 border-blue-400 rounded"
                     >
-                      View Truck
+                      View Vehicle
                     </button>
 
                     {!truck?.driverId && isTruckOwner && (

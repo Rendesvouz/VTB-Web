@@ -9,6 +9,7 @@ import MediaUpload from "../../../components/upload/MediaUpload";
 import axiosInstance from "../../../utils/api-client";
 import FormButton from "../../../components/form/FormButton";
 import { clearEditTruckListingData } from "../../../redux/features/user/userSlice";
+import VerificationDemo from "../../../components/common/VerificationPrompt";
 
 const Container = styled.div`
   padding-top: 130px;
@@ -29,6 +30,8 @@ function EditTruck() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const state = useSelector((state) => state);
+  const loggedInUser = state?.user?.user;
+  console.log("loggedInUser", loggedInUser);
 
   const reduxTruckCategories = state?.user?.truckCategories;
   console.log("reduxTruckCategories", reduxTruckCategories);
@@ -136,7 +139,7 @@ function EditTruck() {
           console.log("editTruckToListings res", res?.data);
           setLoading(false);
           dispatch(clearEditTruckListingData());
-          navigate("/truck-owner/truck-listings");
+          navigate("/vehicle-owner/vehicle-listings");
         })
         .catch((err) => {
           console.log("editTruckToListings err", err?.response);
@@ -156,164 +159,168 @@ function EditTruck() {
 
   return (
     <Container>
-      <div className="max-w-8xl mx-auto p-6 bg-gray-50 rounded-lg shadow-lg">
-        <div className="flex items-center mb-6">
-          <Truck className="text-blue-600 mr-2" size={28} />
-          <h1 className="text-2xl font-bold text-gray-800">Edit Truck</h1>
-        </div>
+      {loggedInUser?.isVerified ? (
+        <div className="max-w-8xl mx-auto p-6 bg-gray-50 rounded-lg shadow-lg">
+          <div className="flex items-center mb-6">
+            <Truck className="text-blue-600 mr-2" size={28} />
+            <h1 className="text-2xl font-bold text-gray-800">Edit Truck</h1>
+          </div>
 
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-            {/* Left column - Truck Details */}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Vehicle Name
-                </label>
-                <input
-                  type="text"
-                  name="carName"
-                  value={truckInfo?.carName}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="e.g. Ford, Chevrolet, Toyota"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Vehicle Model
-                </label>
-                <input
-                  type="text"
-                  name="carModel"
-                  value={truckInfo.carModel}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="e.g. F-150, Silverado, Tundra"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+              {/* Left column - Truck Details */}
+              <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Vehicle Type
-                  </label>
-                  <select
-                    name="carType"
-                    value={truckInfo?.carType}
-                    onChange={(e) => {
-                      const selectedType = e.target.value;
-                      const selectedCategory = reduxTruckCategories?.find(
-                        (cat) => cat?.type === selectedType
-                      );
-
-                      if (selectedCategory) {
-                        setTruckInfo((prev) => ({
-                          ...prev,
-                          carType: selectedCategory?.type,
-                          carPrice: selectedCategory?.baseFare,
-                          carCapacity: selectedCategory?.capacity,
-                        }));
-                      }
-                    }}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Select Truck Type</option>
-                    {reduxTruckCategories?.map((category) => (
-                      <option key={category?.type} value={category?.type}>
-                        {category?.type}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Vehicle Capacity (tons)
+                    Vehicle Name
                   </label>
                   <input
                     type="text"
-                    name="carCapacity"
-                    value={truckInfo?.carCapacity}
+                    name="carName"
+                    value={truckInfo?.carName}
                     onChange={handleInputChange}
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="e.g. 120 tons"
-                    min="0"
-                    disabled
+                    placeholder="e.g. Ford, Chevrolet, Toyota"
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Vehicle Location
+                    Vehicle Model
                   </label>
                   <input
                     type="text"
-                    name="carLocation"
-                    value={truckInfo?.carLocation}
+                    name="carModel"
+                    value={truckInfo.carModel}
                     onChange={handleInputChange}
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="e.g. Lagos, Nigeria"
+                    placeholder="e.g. F-150, Silverado, Tundra"
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Vehicle Type
+                    </label>
+                    <select
+                      name="carType"
+                      value={truckInfo?.carType}
+                      onChange={(e) => {
+                        const selectedType = e.target.value;
+                        const selectedCategory = reduxTruckCategories?.find(
+                          (cat) => cat?.type === selectedType
+                        );
+
+                        if (selectedCategory) {
+                          setTruckInfo((prev) => ({
+                            ...prev,
+                            carType: selectedCategory?.type,
+                            carPrice: selectedCategory?.baseFare,
+                            carCapacity: selectedCategory?.capacity,
+                          }));
+                        }
+                      }}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">Select Truck Type</option>
+                      {reduxTruckCategories?.map((category) => (
+                        <option key={category?.type} value={category?.type}>
+                          {category?.type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Vehicle Capacity (tons)
+                    </label>
+                    <input
+                      type="text"
+                      name="carCapacity"
+                      value={truckInfo?.carCapacity}
+                      onChange={handleInputChange}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g. 120 tons"
+                      min="0"
+                      disabled
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Vehicle Location
+                    </label>
+                    <input
+                      type="text"
+                      name="carLocation"
+                      value={truckInfo?.carLocation}
+                      onChange={handleInputChange}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g. Lagos, Nigeria"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Vehicle Price Rate
+                    </label>
+                    <input
+                      type="number"
+                      name="carPrice"
+                      value={truckInfo?.carPrice}
+                      onChange={handleInputChange}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="e.g. 35000"
+                      min="0"
+                      step="0.01"
+                      disabled
+                    />
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Vehicle Price Rate
+                    Vehicle Description
                   </label>
-                  <input
-                    type="number"
-                    name="carPrice"
-                    value={truckInfo?.carPrice}
+                  <textarea
+                    name="carDescription"
+                    value={truckInfo.carDescription}
                     onChange={handleInputChange}
+                    rows="4"
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="e.g. 35000"
-                    min="0"
-                    step="0.01"
-                    disabled
-                  />
+                    placeholder="Describe the condition, features, and history of the truck..."
+                  ></textarea>
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Vehicle Description
-                </label>
-                <textarea
-                  name="carDescription"
-                  value={truckInfo.carDescription}
-                  onChange={handleInputChange}
-                  rows="4"
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Describe the condition, features, and history of the truck..."
-                ></textarea>
               </div>
             </div>
-          </div>
 
-          <MediaUpload
-            uploadTitle={"Vehicle Images"}
-            images={images}
-            previewUrls={previewUrls}
-            handleImageUpload={handleImageUpload}
-            removeImage={removeImage}
-          />
-
-          {/* Submit Button */}
-          <div className="pt-4 border-t border-gray-200 flex justify-end">
-            <FormButton
-              title={"Edit Truck"}
-              onClick={editTruckToListings}
-              loading={loading}
-              btnIcon={<Save className="mr-2" size={18} />}
-              // opacity={true}
+            <MediaUpload
+              uploadTitle={"Vehicle Images"}
+              images={images}
+              previewUrls={previewUrls}
+              handleImageUpload={handleImageUpload}
+              removeImage={removeImage}
             />
+
+            {/* Submit Button */}
+            <div className="pt-4 border-t border-gray-200 flex justify-end">
+              <FormButton
+                title={"Edit Truck"}
+                onClick={editTruckToListings}
+                loading={loading}
+                btnIcon={<Save className="mr-2" size={18} />}
+                // opacity={true}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <VerificationDemo />
+      )}
     </Container>
   );
 }

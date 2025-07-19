@@ -95,7 +95,7 @@ function PlatformUsersTable({ props = [], tableTitle, onViewDriver }) {
                 "Age",
 
                 // driver info
-                "Assigned Truck",
+                "Assigned Vehicle",
 
                 // Employer info
                 "Employer",

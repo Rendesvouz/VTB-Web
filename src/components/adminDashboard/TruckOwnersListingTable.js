@@ -317,17 +317,19 @@ function TruckOwnersListingTable({ props = [], tableTitle, onViewTruckOwner }) {
                       </button>
                     )}
 
-                    <TransparentBtn
-                      title="View Profile"
+                    <button
                       onClick={() => {
                         // save data to redux
                         dispatch(saveSelectedTruckOwner(truckOwner));
                         // navigate to the profile
                         navigate(
-                          `/truck-owner/profile/${truckOwner?.truckownerId}`
+                          `/vehicle-owner/profile/${truckOwner?.truckownerId}`
                         );
                       }}
-                    />
+                      className="px-3 py-1 text-sm font-medium text-blue-600 bg-white-100 border-2 border-blue-400 rounded"
+                    >
+                      View Profile
+                    </button>
                   </td>
                 </tr>
               );

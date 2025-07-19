@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 
 import FormButton from "../form/FormButton";
 import { COLORS } from "../../themes/themes";
+import { useSelector } from "react-redux";
 
 const VerificationRequiredModal = ({ isOpen, onClose, onGoToProfile }) => {
   const verificationSteps = [
@@ -248,6 +249,10 @@ const VerificationRequiredModal = ({ isOpen, onClose, onGoToProfile }) => {
 
 // Alternative inline version that can be used directly in the component
 const VerificationRequiredInline = ({ onGoToProfile }) => {
+  const state = useSelector((state) => state);
+  const loggedInUser = state?.user?.user;
+  const loggedInUserVerification = loggedInUser?.User?.verification;
+
   const requiredDocuments = [
     "Business Registration Certificate",
     "Proof of Address",
@@ -269,7 +274,7 @@ const VerificationRequiredInline = ({ onGoToProfile }) => {
             <div>
               <h1 className="text-3xl font-bold">Verification Required</h1>
               <p className="text-blue-100 text-lg">
-                Complete your account verification to start listing trucks
+                Complete your account verification to start listing vehicles
               </p>
             </div>
           </div>
@@ -278,21 +283,40 @@ const VerificationRequiredInline = ({ onGoToProfile }) => {
         {/* Content */}
         <div className="p-8">
           {/* Alert */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-8">
-            <div className="flex items-start">
-              <AlertCircle className="w-6 h-6 text-yellow-600 mt-1 mr-4 flex-shrink-0" />
-              <div>
-                <h3 className="font-semibold text-yellow-800 text-lg mb-2">
-                  Account Verification Needed
-                </h3>
-                <p className="text-yellow-700">
-                  We require all truck owners to complete verification before
-                  listing vehicles. This ensures platform security and builds
-                  trust with potential customers.
-                </p>
+          {loggedInUserVerification?.verificationStatus == "pending" &&
+          loggedInUserVerification?.supportingDocuments?.length ? (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-8">
+              <div className="flex items-start">
+                <AlertCircle className="w-6 h-6 text-yellow-600 mt-1 mr-4 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-yellow-800 text-lg mb-2">
+                    Documents Submitted
+                  </h3>
+                  <p className="text-yellow-700">
+                    Thank you for submitting your documents. Your account is
+                    currently under review. You will be notified once a decision
+                    has been made.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-8">
+              <div className="flex items-start">
+                <AlertCircle className="w-6 h-6 text-yellow-600 mt-1 mr-4 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-yellow-800 text-lg mb-2">
+                    Account Verification Needed
+                  </h3>
+                  <p className="text-yellow-700">
+                    We require all vehicle owners to complete verification
+                    before listing vehicles. This ensures platform security and
+                    builds trust with potential customers.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -315,7 +339,7 @@ const VerificationRequiredInline = ({ onGoToProfile }) => {
                 Full Platform Access
               </h3>
               <p className="text-blue-700 text-sm">
-                List unlimited trucks and access all features
+                List unlimited vehicles and access all features
               </p>
             </div>
             <div className="text-center p-6 bg-purple-50 rounded-xl">
@@ -355,7 +379,7 @@ const VerificationRequiredInline = ({ onGoToProfile }) => {
                 <div>
                   <h4 className="font-medium text-gray-900">Full Access</h4>
                   <p className="text-sm text-gray-600">
-                    List and manage your trucks
+                    List and manage your vehicles
                   </p>
                 </div>
               </div>
@@ -431,7 +455,7 @@ const VerificationDemo = () => {
   const handleGoToProfile = () => {
     console.log("Navigating to profile page...");
     // Navigate to profile page
-    navigate("/truck-owner/profile");
+    navigate("/vehicle-owner/profile");
   };
 
   return (

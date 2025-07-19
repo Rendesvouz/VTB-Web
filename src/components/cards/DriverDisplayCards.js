@@ -22,6 +22,9 @@ const DriverSelectionDisplay = ({
   const loggedInUser = state?.user?.user;
   console.log("loggedInUser", loggedInUser);
 
+  const verifiedDrivers = driversArray?.filter((driver) => driver?.isVerified);
+  console.log("verifiedDrivers", verifiedDrivers);
+
   const [selectedDriver, setSelectedDriver] = useState(null);
 
   const handleAssignDriver = async (driver) => {
@@ -123,8 +126,8 @@ const DriverSelectionDisplay = ({
 
         {/* Driver Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {driversArray?.length ? (
-            driversArray?.map((driver, i) => (
+          {verifiedDrivers?.length ? (
+            verifiedDrivers?.map((driver, i) => (
               <DriverCards
                 key={i}
                 props={driver}

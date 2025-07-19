@@ -20,18 +20,28 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { formatDate, getTimeActive, getYearsActive } from "../../../Library/Common";
+import {
+  formatDate,
+  getTimeActive,
+  getYearsActive,
+} from "../../../Library/Common";
 import { getStatusButtonProps } from "../../../Library/Precedence";
-import { saveTruckOwnersListings } from "../../../redux/features/user/userSlice";
+import {
+  saveDriversListings,
+  saveTruckOwnersListings,
+} from "../../../redux/features/user/userSlice";
 import axiosInstance from "../../../utils/api-client";
 
-const TruckOwnerListingProfile = () => {
+const DriverListingProfile = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const state = useSelector((state) => state);
 
-  const reduxSelectedTruckOwner = state?.user?.selectedTruckOwner;
-  console.log("reduxSelectedTruckOwner", reduxSelectedTruckOwner);
+  const userProfle = state?.user?.user;
+  const isTruckOwner = userProfle?.User?.role == "TruckOwner";
+
+  const reduxSelectedDriver = state?.user?.selectedDriver;
+  console.log("reduxSelectedDriver", reduxSelectedDriver);
 
   const [loading, setLoading] = useState(false);
 
@@ -42,10 +52,10 @@ const TruckOwnerListingProfile = () => {
   const [actionType, setActionType] = useState("");
 
   const uploadedDocuments =
-    reduxSelectedTruckOwner?.User?.verification?.supportingDocuments;
+    reduxSelectedDriver?.User?.verification?.supportingDocuments;
 
   const { label, nextStatus, bgColor, hoverColor, Icon } = getStatusButtonProps(
-    reduxSelectedTruckOwner?.User?.verification?.verificationStatus,
+    reduxSelectedDriver?.User?.verification?.verificationStatus,
     Ban,
     CheckCircle,
     Clock,
@@ -89,16 +99,9 @@ const TruckOwnerListingProfile = () => {
     }
   };
 
-  //   const handleStatusChange = (newStatus) => {
-  //     setActionType(newStatus);
-  //     setShowStatusModal(true);
-  //   };
-
   const handleStatusChange = async () => {
-
     const currentStatus =
-      reduxSelectedTruckOwner?.User?.verification?.verificationStatus ||
-      "rejected";
+      reduxSelectedDriver?.User?.verification?.verificationStatus || "rejected";
 
     let newStatus = currentStatus;
     let action = "";
@@ -117,7 +120,7 @@ const TruckOwnerListingProfile = () => {
     setLoading(true);
     try {
       const res = await axiosInstance({
-        url: `api/verification/status/${reduxSelectedTruckOwner?.truckownerId}`,
+        url: `api/verification/status/${reduxSelectedDriver?.driverId}`,
         method: "PUT",
         data: {
           verificationStatus: newStatus,
@@ -129,7 +132,7 @@ const TruckOwnerListingProfile = () => {
 
       console.log("handleSuspend res", res?.data);
 
-      fetchTruckOwnersListingsWithTruckInfo();
+      fetchDriversListingsWithTruckInfo();
     } catch (err) {
       console.log("handleSuspend err", err?.response?.data);
       setLoading(false);
@@ -139,17 +142,17 @@ const TruckOwnerListingProfile = () => {
     }
   };
 
-  const fetchTruckOwnersListingsWithTruckInfo = async () => {
+  const fetchDriversListingsWithTruckInfo = async () => {
     setLoading(true);
     try {
-      const [truckOwnerRes, trucksRes] = await Promise.all([
-        axiosInstance.get("api/profile/all-truckownerprofile"),
+      const [driversRes, trucksRes] = await Promise.all([
+        axiosInstance.get("api/profile/all-driverprofile"),
         axiosInstance.get("api/listings/all-offerings"),
       ]);
 
-      const truckOwners = truckOwnerRes?.data?.data || [];
+      const drivers = driversRes?.data?.data || [];
       const trucks = trucksRes?.data?.data || [];
-      console.log("fetchTruckOwnersListingsWithTruckInfo", truckOwners, trucks);
+      console.log("fetchDriversListingsWithTruckInfo", drivers, trucks);
 
       // Fetch truck owner profiles for each truck
       const enrichedTrucks = await Promise.all(
@@ -173,27 +176,27 @@ const TruckOwnerListingProfile = () => {
         })
       );
 
-      // Build a map of truckOwnerId -> truck info
-      const truckOwnerToTruckMap = {};
+      // Build a map of driverId -> truck info
+      const driverToTruckMap = {};
       enrichedTrucks?.forEach((truck) => {
-        if (truck?.truckOwnerId) {
-          truckOwnerToTruckMap[truck?.truckOwnerId] = truck;
+        if (truck?.driverId) {
+          driverToTruckMap[truck?.driverId] = truck;
         }
       });
 
-      // Append assigned truck info to each truckowner
-      const enrichedTruckOwners = truckOwners?.map((truckOwner) => ({
-        ...truckOwner,
-        assignedTruck: truckOwnerToTruckMap[truckOwner?.truckOwnerId] || null,
+      // Append assigned truck info to each driver
+      const enrichedDrivers = drivers?.map((driver) => ({
+        ...driver,
+        assignedTruck: driverToTruckMap[driver?.driverId] || null,
       }));
 
-      dispatch(saveTruckOwnersListings(enrichedTruckOwners));
+      dispatch(saveDriversListings(enrichedDrivers));
       setLoading(false);
       navigate(-1);
 
-      console.log("Enriched TruckOwners with Truck Info", enrichedTruckOwners);
+      console.log("Enriched Drivers with Truck Info", enrichedDrivers);
     } catch (error) {
-      console.log("Error fetching TruckOwners or truck listings:", error);
+      console.log("Error fetching drivers or truck listings:", error);
       setLoading(false);
     }
   };
@@ -292,30 +295,30 @@ const TruckOwnerListingProfile = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <img
-                src={reduxSelectedTruckOwner?.supportingDocuments?.[0]}
-                alt={reduxSelectedTruckOwner?.fullName}
+                src={reduxSelectedDriver?.profilePicture}
+                alt={reduxSelectedDriver?.fullName}
                 className="w-16 h-16 rounded-full object-contain"
               />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {reduxSelectedTruckOwner?.fullName}
+                  {reduxSelectedDriver?.fullName}
                 </h1>
                 <p className="text-gray-600">{""}</p>
                 <div className="flex items-center gap-2 mt-2">
                   <span
                     className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${getStatusColor(
-                      reduxSelectedTruckOwner?.User?.verification
+                      reduxSelectedDriver?.User?.verification
                         ?.verificationStatus
                     )}`}
                   >
                     {getStatusIcon(
-                      reduxSelectedTruckOwner?.User?.verification
+                      reduxSelectedDriver?.User?.verification
                         ?.verificationStatus
                     )}
-                    {reduxSelectedTruckOwner?.User?.verification?.verificationStatus
+                    {reduxSelectedDriver?.User?.verification?.verificationStatus
                       .charAt(0)
                       .toUpperCase() +
-                      reduxSelectedTruckOwner?.User?.verification?.verificationStatus.slice(
+                      reduxSelectedDriver?.User?.verification?.verificationStatus.slice(
                         1
                       )}
                   </span>
@@ -323,14 +326,16 @@ const TruckOwnerListingProfile = () => {
               </div>
             </div>
             <div className="flex gap-3">
-              <button
-                onClick={() => handleStatusChange(nextStatus)}
-                disabled={loading}
-                className={`flex items-center gap-2 px-4 py-2 text-white rounded-lg ${bgColor} ${hoverColor}`}
-              >
-                <Icon className="w-4 h-4" />
-                {loading ? "Loading" : label}
-              </button>
+              {!isTruckOwner && (
+                <button
+                  onClick={() => handleStatusChange(nextStatus)}
+                  disabled={loading}
+                  className={`flex items-center gap-2 px-4 py-2 text-white rounded-lg ${bgColor} ${hoverColor}`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {loading ? "Loading" : label}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -340,9 +345,9 @@ const TruckOwnerListingProfile = () => {
           <div className="bg-white rounded-lg shadow-sm p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Vehicles</p>
+                <p className="text-sm text-gray-600">Assigned Vehicles</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {reduxSelectedTruckOwner?.assignedTrucks?.length || 0}
+                  {reduxSelectedDriver?.assignedTrucks?.length || 0}
                 </p>
               </div>
               <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -355,7 +360,7 @@ const TruckOwnerListingProfile = () => {
               <div>
                 <p className="text-sm text-gray-600">Completed Jobs</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {reduxSelectedTruckOwner?.completedJobs || 0}
+                  {reduxSelectedDriver?.completedJobs || 0}
                 </p>
               </div>
               <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
@@ -368,7 +373,7 @@ const TruckOwnerListingProfile = () => {
               <div>
                 <p className="text-sm text-gray-600">Rating</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {reduxSelectedTruckOwner?.rating || 0}
+                  {reduxSelectedDriver?.rating || 0}
                 </p>
               </div>
               <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
@@ -381,7 +386,7 @@ const TruckOwnerListingProfile = () => {
               <div>
                 <p className="text-sm text-gray-600">Years Active</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {getTimeActive(reduxSelectedTruckOwner?.createdAt)}
+                  {getTimeActive(reduxSelectedDriver?.createdAt)}
                 </p>
               </div>
               <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
@@ -433,7 +438,7 @@ const TruckOwnerListingProfile = () => {
                       <div>
                         <p className="text-sm text-gray-500">Full Name</p>
                         <p className="font-medium">
-                          {reduxSelectedTruckOwner?.fullName}
+                          {reduxSelectedDriver?.fullName}
                         </p>
                       </div>
                     </div>
@@ -442,7 +447,7 @@ const TruckOwnerListingProfile = () => {
                       <div>
                         <p className="text-sm text-gray-500">Email</p>
                         <p className="font-medium">
-                          {reduxSelectedTruckOwner?.User?.email}
+                          {reduxSelectedDriver?.User?.email}
                         </p>
                       </div>
                     </div>
@@ -451,7 +456,7 @@ const TruckOwnerListingProfile = () => {
                       <div>
                         <p className="text-sm text-gray-500">Phone</p>
                         <p className="font-medium">
-                          {reduxSelectedTruckOwner?.phoneNumber}
+                          {reduxSelectedDriver?.phoneNumber}
                         </p>
                       </div>
                     </div>
@@ -460,7 +465,7 @@ const TruckOwnerListingProfile = () => {
                       <div>
                         <p className="text-sm text-gray-500">Address</p>
                         <p className="font-medium">
-                          {reduxSelectedTruckOwner?.address}
+                          {reduxSelectedDriver?.address}
                         </p>
                       </div>
                     </div>
@@ -470,26 +475,24 @@ const TruckOwnerListingProfile = () => {
                 {/* Business Information */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900">
-                    Business Information
+                    Assign Vehicle Information
                   </h3>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <Shield className="w-5 h-5 text-gray-400" />
                       <div>
-                        <p className="text-sm text-gray-500">Company Name</p>
+                        <p className="text-sm text-gray-500">Vehicle Name</p>
                         <p className="font-medium">
-                          {reduxSelectedTruckOwner?.companyName}
+                          {reduxSelectedDriver?.companyName}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <FileText className="w-5 h-5 text-gray-400" />
                       <div>
-                        <p className="text-sm text-gray-500">
-                          Company Address{" "}
-                        </p>
+                        <p className="text-sm text-gray-500">Vehicle Owner </p>
                         <p className="font-medium">
-                          {reduxSelectedTruckOwner?.companyAddress}
+                          {reduxSelectedDriver?.companyAddress}
                         </p>
                       </div>
                     </div>
@@ -505,7 +508,7 @@ const TruckOwnerListingProfile = () => {
                     <div className="bg-blue-50 p-4 rounded-lg">
                       <p className="text-sm text-gray-500">Join Date</p>
                       <p className="font-medium text-blue-600">
-                        {formatDate(reduxSelectedTruckOwner?.createdAt)}
+                        {formatDate(reduxSelectedDriver?.createdAt)}
                       </p>
                     </div>
                   </div>
@@ -607,4 +610,4 @@ const TruckOwnerListingProfile = () => {
   );
 };
 
-export default TruckOwnerListingProfile;
+export default DriverListingProfile;

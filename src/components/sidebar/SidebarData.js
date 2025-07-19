@@ -21,8 +21,8 @@ export const SidebarData = [
     icon: <IoReceiptOutline />,
   },
   {
-    title: "Truck Owners",
-    path: "/truck-owners-listings",
+    title: "Vehicle Owners",
+    path: "/vehicle-owners-listings",
     icon: <FaBuildingUser />,
   },
   {
@@ -31,8 +31,8 @@ export const SidebarData = [
     icon: <BsPersonVcard />,
   },
   {
-    title: "Trucks",
-    path: "/truck-listings",
+    title: "Vehicles",
+    path: "/vehicle-listings",
     icon: <BsTruck />,
   },
   {
@@ -41,8 +41,8 @@ export const SidebarData = [
     icon: <FaUsers />,
   },
   {
-    title: "Truck Category",
-    path: "/truck-categories",
+    title: "Vehicle Category",
+    path: "/vehicle-categories",
     icon: <BiCategory />,
   },
   {
@@ -65,37 +65,37 @@ export const SidebarData = [
 export const TruckOwnerSidebarData = [
   {
     title: "Dashboard",
-    path: "/truck-owner/dashboard",
+    path: "/vehicle-owner/dashboard",
     icon: <GrProjects />,
   },
   {
-    title: "My Trucks",
-    path: "/truck-owner/truck-listings",
+    title: "My Vehicles",
+    path: "/vehicle-owner/vehicle-listings",
     icon: <BsTruck />,
   },
   {
     title: "My Drivers",
-    path: "/truck-owner/drivers",
+    path: "/vehicle-owner/drivers",
     icon: <BsPersonVcard />,
   },
   {
     title: "My Bookings",
-    path: "/truck-owner/bookings",
+    path: "/vehicle-owner/bookings",
     icon: <IoReceiptOutline />,
   },
   {
     title: "Notifications",
-    path: "/truck-owner/notifications",
+    path: "/vehicle-owner/notifications",
     icon: <FaBell />,
   },
   {
     title: "Account",
-    path: "/truck-owner/profile",
+    path: "/vehicle-owner/profile",
     icon: <MdOutlineAccountCircle />,
   },
   {
     title: "Settings",
-    path: "/truck-owner/edit-profile",
+    path: "/vehicle-owner/edit-profile",
     icon: <IoSettingsOutline />,
   },
 ];

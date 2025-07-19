@@ -329,7 +329,7 @@ function TruckOwnerOnboarding() {
         showToast("Yayyyy. Your Profile is all set now 😇", "success");
         setLoading(false);
 
-        navigate("/truck-owner/dashboard");
+        navigate("/vehicle-owner/dashboard");
       }
     } catch (error) {
       console.error("checkTruckOwnerProfile check error:", error);

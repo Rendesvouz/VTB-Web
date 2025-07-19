@@ -22,6 +22,7 @@ import DriverListing from "../pages/AdminDashboard/DriversListing/DriverListing"
 import TruckOwnersListings from "../pages/AdminDashboard/TruckOwnersListing/TruckOwnersListings";
 import TruckOwnerListingProfile from "../pages/AdminDashboard/TruckOwnersListing/TruckOwnerListingProfile";
 import UsersListing from "../pages/AdminDashboard/UsersListing";
+import DriverListingProfile from "../pages/AdminDashboard/DriversListing/DriverListingProfile";
 
 function ProtectedRoutes() {
   return (
@@ -35,23 +36,24 @@ function ProtectedRoutes() {
 
         {/* Drivers section */}
         <Route path="/driver-listings" element={<DriverListing />} />
+        <Route path="/driver/profile/:id" element={<DriverListingProfile />} />
 
         {/* Truck Categories */}
-        <Route path="/truck-categories" element={<TruckCategories />} />
+        <Route path="/vehicle-categories" element={<TruckCategories />} />
 
         {/* Trucks section */}
-        <Route path="/truck-listings" element={<TruckListings />} />
-        <Route path="/add-truck" element={<CreateTruck />} />
-        <Route path="/edit-truck/:id" element={<EditTruck />} />
-        <Route path="/truck-details/:id" element={<TruckDetailsPage />} />
+        <Route path="/vehicle-listings" element={<TruckListings />} />
+        <Route path="/add-vehicle" element={<CreateTruck />} />
+        <Route path="/edit-vehicle/:id" element={<EditTruck />} />
+        <Route path="/vehicle-details/:id" element={<TruckDetailsPage />} />
 
         {/*  Truck owners section */}
         <Route
-          path="/truck-owners-listings"
+          path="/vehicle-owners-listings"
           element={<TruckOwnersListings />}
         />
         <Route
-          path="/truck-owner/profile/:id"
+          path="/vehicle-owner/profile/:id"
           element={<TruckOwnerListingProfile />}
         />
 

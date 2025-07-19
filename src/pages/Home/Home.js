@@ -325,12 +325,12 @@ function Home() {
 
         showToast("Login Successful. Welcome Back! 😇", "success");
       } else {
-        navigate("/truck-owner/onboarding");
+        navigate("/vehicle-owner/onboarding");
       }
     } catch (error) {
       console.error("checkTruckOwnerProfile check error:", error);
       if (error?.response?.status == 404) {
-        navigate("/truck-owner/onboarding");
+        navigate("/vehicle-owner/onboarding");
       }
     }
   };

@@ -124,7 +124,7 @@ function TruckCategories() {
   return (
     <Container>
       <div className="flex justify-between items-center 500 p-4">
-        <h1 className="text-2xl font-bold text-gray-900">Truck Categories</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Vehicle Categories</h1>
         <FormButton
           title={"Create Category"}
           width={"100%"}
@@ -137,12 +137,12 @@ function TruckCategories() {
       {reduxTruckCategories && (
         <TruckCategoriesTable
           categories={reduxTruckCategories}
-          tableTitle={"Truck Categories"}
+          tableTitle={"Vehicle Categories"}
         />
       )}
 
       <Modal
-        title="Create Truck Category"
+        title="Create Vehicle Category"
         isOpen={openModal}
         onClose={closeModal}
       >

@@ -28,6 +28,7 @@ const initialState = {
 
   // drivers listing
   driversListings: [],
+  selectedDriver: null,
 
   // truckowner verification
   isTruckOwnerVerified: null,
@@ -115,6 +116,9 @@ const userSlice = createSlice({
     saveDriversListings: (state, action) => {
       state.driversListings = action.payload;
     },
+    saveSelectedDriver: (state, action) => {
+      state.selectedDriver = action.payload;
+    },
     updateTruckOwnerVerififcation: (state, action) => {
       state.isTruckOwnerVerified = action.payload;
     },
@@ -157,6 +161,7 @@ export const {
 
   // drivers
   saveDriversListings,
+  saveSelectedDriver,
 
   // truckowner verification
   updateTruckOwnerVerififcation,

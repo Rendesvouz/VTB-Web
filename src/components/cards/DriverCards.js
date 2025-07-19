@@ -1,10 +1,16 @@
 import React, { useState } from "react";
 import { Star, Clock, MapPin, Award } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+
 import FormButton from "../form/FormButton";
 import TransparentBtn from "../form/TransparentBtn";
+import { saveSelectedDriver } from "../../redux/features/user/userSlice";
 
 function DriverCards({ props, onClick, disabled, assignedDriverIds = [] }) {
   // console.log("popop", props, assignedDriverIds);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const getStatusColor = (props) => {
     if (!props) return "bg-gray-100 text-gray-500";
@@ -148,7 +154,16 @@ function DriverCards({ props, onClick, disabled, assignedDriverIds = [] }) {
 
         {/* Action Buttons */}
         <div className="flex space-x-3 justify-between">
-          <TransparentBtn title={"View Profile"} marginLeft={"0px"} />
+          <TransparentBtn
+            title={"View Profile"}
+            marginLeft={"0px"}
+            onClick={() => {
+              // save data to redux
+              dispatch(saveSelectedDriver(props));
+              // navigate to the profile
+              navigate(`/vehicle-owner/driver/profile/${props?.driverId}`);
+            }}
+          />
 
           <FormButton
             title={getDriverActionText(props)}

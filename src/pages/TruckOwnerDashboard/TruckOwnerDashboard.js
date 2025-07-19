@@ -219,7 +219,7 @@ function TruckOwnerDashboard() {
         vehicleCount={reduxTruckListings?.length}
         bookings={reduxBookedTrucks}
         onTruckClick={() => {
-          navigate("/truck-owner/truck-listings");
+          navigate("/vehicle-owner/vehicle-listings");
         }}
       />
 

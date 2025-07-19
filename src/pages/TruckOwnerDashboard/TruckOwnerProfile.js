@@ -14,6 +14,7 @@ import {
   getUser,
   updateTruckOwnerVerififcation,
 } from "../../redux/features/user/userSlice";
+import { toast } from "react-toastify";
 
 const TruckOwnerProfile = () => {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ const TruckOwnerProfile = () => {
 
   const state = useSelector((state) => state);
   const loggedInUser = state?.user?.user;
+  const loggedInUserVerification = loggedInUser?.User?.verification;
   const reduxVerificationUploads = state?.user?.isTruckOwnerVerified;
   console.log("loggedInUser", loggedInUser, state, reduxVerificationUploads);
 
@@ -35,7 +37,13 @@ const TruckOwnerProfile = () => {
     email: loggedInUser?.User?.email,
     phone: loggedInUser?.phoneNumber,
     address: loggedInUser?.address,
-    businessName: "Truck Transport Services",
+    bankDetails: [
+      {
+        bankName: "",
+        bankAccountNumber: "",
+      },
+    ],
+    businessName: "Vehicle Transport Services",
     businessRegNumber: "RC123456789",
     yearsOfOperation: "5",
   });
@@ -189,6 +197,54 @@ const TruckOwnerProfile = () => {
 
   const status = getVerificationStatus();
 
+  const updateTruckOwnerProfile = async () => {
+    console.log("updateTruckOwnerProfile");
+    setIsEditing(!isEditing);
+
+    const editProfileData = {};
+
+    console.log("editProfileData:", editProfileData);
+
+    try {
+      await axiosInstance({
+        url: `api/profile/update-truckownerprofile`,
+        method: "PUT",
+        data: editProfileData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      })
+        .then((res) => {
+          console.log("updateTruckOwnerProfile res", res?.data);
+          setLoading(false);
+        })
+        .catch((err) => {
+          console.log("updateTruckOwnerProfile err", err?.response);
+          setLoading(false);
+          toast.error(
+            "An error occured while updating your profile, please try again later"
+          );
+        });
+    } catch (error) {
+      console.log("updateTruckOwnerProfile error", error?.response);
+      setLoading(false);
+      toast.error(
+        "An error occured while updating your profile, please try again later"
+      );
+    }
+  };
+
+  const handleBankChange = (index, field, value) => {
+    const updatedBankDetails = [...profileData?.bankDetails];
+    updatedBankDetails[index][field] = value;
+
+    setProfileData((prev) => ({
+      ...prev,
+      bankDetails: updatedBankDetails,
+    }));
+  };
+
   useEffect(() => {
     if (loggedInUser?.isVerified) {
       // Update the local documents state
@@ -276,21 +332,40 @@ const TruckOwnerProfile = () => {
         </div>
 
         {/* Access Status Alert */}
-        {!canAccessPlatform() && (
+        {loggedInUserVerification?.verificationStatus == "pending" &&
+        loggedInUserVerification?.supportingDocuments?.length ? (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
             <div className="flex items-start">
               <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 mr-3" />
               <div>
                 <h3 className="font-medium text-yellow-800">
-                  Complete Your Profile
+                  Documents Submitted
                 </h3>
                 <p className="text-yellow-700 text-sm mt-1">
-                  You need to upload and verify all required documents to access
-                  the platform.
+                  Thank you for submitting your documents. Your account is
+                  currently under review. You will be notified once a decision
+                  has been made.
                 </p>
               </div>
             </div>
           </div>
+        ) : (
+          !canAccessPlatform() && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <div className="flex items-start">
+                <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5 mr-3" />
+                <div>
+                  <h3 className="font-medium text-yellow-800">
+                    Complete Your Profile
+                  </h3>
+                  <p className="text-yellow-700 text-sm mt-1">
+                    You need to upload and verify all required documents to
+                    access the platform.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )
         )}
 
         {/* Navigation Tabs */}
@@ -328,7 +403,9 @@ const TruckOwnerProfile = () => {
                   Profile Information
                 </h2>
                 <button
-                  onClick={() => setIsEditing(!isEditing)}
+                  onClick={() => {
+                    updateTruckOwnerProfile();
+                  }}
                   className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                 >
                   {isEditing ? (
@@ -431,6 +508,55 @@ const TruckOwnerProfile = () => {
                     </p>
                   )}
                 </div>
+
+                {profileData?.bankDetails?.map((bank, index) => (
+                  <div
+                    key={index}
+                    className="mb-4 p-4 border rounded-lg bg-gray-50"
+                  >
+                    <div className="mb-3">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Bank Name
+                      </label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={bank.bankName}
+                          onChange={(e) =>
+                            handleBankChange(index, "bankName", e.target.value)
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <p className="text-gray-900">{bank.bankName || "—"}</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Bank Account Number
+                      </label>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          value={bank.bankAccountNumber}
+                          onChange={(e) =>
+                            handleBankChange(
+                              index,
+                              "bankAccountNumber",
+                              e.target.value
+                            )
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      ) : (
+                        <p className="text-gray-900">
+                          {bank.bankAccountNumber || "—"}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}

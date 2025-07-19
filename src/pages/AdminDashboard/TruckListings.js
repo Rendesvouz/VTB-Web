@@ -418,15 +418,15 @@ function TruckListings() {
   return (
     <Container>
       <div className="flex justify-between items-center 500 p-4">
-        <h1 className="text-2xl font-bold text-gray-900">TruckListings</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Vehicle Listings</h1>
         {isTruckOwner && (
           <FormButton
-            title={"Create Truck"}
+            title={"Create Vehicle"}
             width={"100%"}
             onClick={() => {
               isTruckOwner
-                ? navigate("/truck-owner/add-truck")
-                : navigate("/add-truck");
+                ? navigate("/vehicle-owner/add-vehicle")
+                : navigate("/add-vehicle");
             }}
           />
         )}
@@ -460,7 +460,7 @@ function TruckListings() {
             <Modal
               title={
                 selectedDriver?.truckownerId
-                  ? "Truck Assignment"
+                  ? "Vehicle Assignment"
                   : "Driver Employment"
               }
               isOpen={openModal}
@@ -538,7 +538,7 @@ function TruckListings() {
         bookings={
           isTruckOwner ? reduxTruckOwnersTrucksListings : reduxTruckListings
         }
-        tableTitle={"Truck listings"}
+        tableTitle={"Vehicle listings"}
         assignDriver={(truck) => {
           setSelectedTruckForAssignment(truck);
           setShowDrivers(true);
@@ -546,7 +546,7 @@ function TruckListings() {
         onViewTruck={(truck) => {
           console.log("onViewTruck", truck);
           dispatch(saveTruckDetailsData(truck));
-          navigate(`/truck-details/${truck?.id}`);
+          navigate(`/vehicle-details/${truck?.id}`);
         }}
       />
     </Container>

@@ -220,7 +220,7 @@ function Dashboard() {
         vehicleCount={reduxTruckListings?.length}
         bookings={reduxBookedTrucks}
         onTruckClick={() => {
-          navigate("/truck-listings");
+          navigate("/vehicle-listings");
         }}
         showPlatformUsers={true}
         onPlatformUsers={() => {
